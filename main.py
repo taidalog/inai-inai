@@ -1,11 +1,12 @@
 from pathlib import Path
-import sys
 import re
 import cv2
 from retinaface import RetinaFace
 import numpy as np
 import argparse
 import time
+import tkinter as tk
+from tkinterdnd2 import DND_FILES, TkinterDnD
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -17,6 +18,9 @@ parser.add_argument(
 )
 parser.add_argument("-i", "--input-directory", help="specify the input directory")
 parser.add_argument("-o", "--output-directory", help="specify the output directory")
+args = parser.parse_args()
+
+filename_pattern = r"^.+\.(jpe?g|png|bmp|tiff?|webp)$"
 
 
 def maskf(height, width, center, radius):
@@ -34,130 +38,130 @@ def maskf(height, width, center, radius):
     return mask
 
 
-def main():
-    args = parser.parse_args()
+def blur_faces(p: Path):
+    if not p.exists():
+        print(f"Skipped image:\t{p} (File does not exist)")
+        return
 
-    root_path = Path(__file__).parent
+    t = time.time()
 
-    input_path = (
-        Path(args.input_directory) if args.input_directory else root_path / "input"
+    print(f"Detecting faces: {p}")
+    img = cv2.imread(p)
+    faces = RetinaFace.detect_faces(img)
+
+    if len(list(faces.keys())) == 0:
+        print(f"Skipped image:\t{p} (No faces detected)")
+        return
+
+    print(
+        f"Detected faces:\t{p} ({len(list(faces.keys()))} faces, {time.time() - t} seconds)"
     )
-    output_path = (
-        Path(args.output_directory) if args.output_directory else root_path / "output"
-    )
 
-    if not input_path.exists():
-        print(f"Input path does not exist: {input_path}")
-        input("Press Enter to exit...")
-        sys.exit()
+    t = time.time()
 
-    filename_pattern = r"^.+\.(jpe?g|png|bmp|tiff?|webp)$"
+    height, width, _ = img.shape
+    if args.verbose:
+        print(f"Image dimensions: {width} x {height}")
+
+    for k in faces.keys():
+        if args.verbose:
+            print(f"Face {k}: {faces[k]['facial_area']}")
+
+        x1, y1, x2, y2 = faces[k]["facial_area"]
+        center = ((x1 + x2) // 2, (y1 + y2) // 2)
+        radius = ((x2 - x1) // 2, (y2 - y1) // 2)
+
+        facial_area = img[y1:y2, x1:x2]
+        facial_height, facial_width, _ = facial_area.shape
+
+        if args.verbose:
+            print(f"Face dimensions: {facial_width} x {facial_height}")
+
+        mask_center = (facial_width // 2, facial_height // 2)
+        mask_radius = (facial_width // 2, facial_height // 2)
+
+        mask = maskf(facial_height, facial_width, mask_center, mask_radius)
+
+        if args.debug:
+            print(f"mask_center {mask_center}")
+            print(f"mask_radius {mask_radius}")
+
+        blurred_facial_area = cv2.blur(facial_area, ksize=(height // 40, width // 40))
+
+        facial_area2 = np.where(
+            mask == 255,
+            blurred_facial_area,
+            facial_area,
+        )
+
+        if args.debug:
+            cv2.imshow(
+                f"Face {k}",
+                cv2.hconcat([facial_area, mask, facial_area2]),
+            )
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
+
+        img[y1:y2, x1:x2] = facial_area2
+
+        if args.debug:
+            stroke_width = max(1, width // 1000)
+            img = cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), stroke_width)
+
+            img = cv2.ellipse(
+                img,
+                center,
+                radius,
+                0,
+                0,
+                360,
+                (0, 0, 255),
+                stroke_width,
+            )
+            cv2.imshow(f"Face mask {k}", img)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
+    return img
+
+
+def on_drop(event):
+    file_paths = root.tk.splitlist(event.data)
 
     img_paths = [
-        p
-        for p in input_path.rglob("*")
-        if p.is_file() and re.match(filename_pattern, p.name.lower())
+        Path(p)
+        for p in file_paths
+        if Path(p).is_file() and re.match(filename_pattern, Path(p).name.lower())
     ]
 
     t0 = time.time()
 
     for p in img_paths:
-        if not p.exists():
-            print(f"Skipped image:\t{p} (File does not exist)")
-            continue
+        blurred_img = blur_faces(p)
 
-        t = time.time()
-
-        print(f"Detecting faces: {p}")
-        img = cv2.imread(p)
-        faces = RetinaFace.detect_faces(img)
-
-        if len(list(faces.keys())) == 0:
-            print(f"Skipped image:\t{p} (No faces detected)")
-            continue
-
-        print(
-            f"Detected faces:\t{p} ({len(list(faces.keys()))} faces, {time.time() - t} seconds)"
+        output_path = (
+            Path(args.output_directory)
+            if args.output_directory
+            else p.parent / "output"
         )
-
-        t = time.time()
-
-        height, width, _ = img.shape
-        if args.verbose:
-            print(f"Image dimensions: {width} x {height}")
-
-        for k in faces.keys():
-            if args.verbose:
-                print(f"Face {k}: {faces[k]['facial_area']}")
-
-            x1, y1, x2, y2 = faces[k]["facial_area"]
-            center = ((x1 + x2) // 2, (y1 + y2) // 2)
-            radius = ((x2 - x1) // 2, (y2 - y1) // 2)
-
-            facial_area = img[y1:y2, x1:x2]
-            facial_height, facial_width, _ = facial_area.shape
-
-            if args.verbose:
-                print(f"Face dimensions: {facial_width} x {facial_height}")
-
-            mask_center = (facial_width // 2, facial_height // 2)
-            mask_radius = (facial_width // 2, facial_height // 2)
-
-            mask = maskf(facial_height, facial_width, mask_center, mask_radius)
-
-            if args.debug:
-                print(f"mask_center {mask_center}")
-                print(f"mask_radius {mask_radius}")
-
-            blurred_facial_area = cv2.blur(
-                facial_area, ksize=(height // 40, width // 40)
-            )
-
-            facial_area2 = np.where(
-                mask == 255,
-                blurred_facial_area,
-                facial_area,
-            )
-
-            if args.debug:
-                cv2.imshow(
-                    f"Face {k}",
-                    cv2.hconcat([facial_area, mask, facial_area2]),
-                )
-                cv2.waitKey(0)
-                cv2.destroyAllWindows()
-
-            img[y1:y2, x1:x2] = facial_area2
-
-            if args.debug:
-                stroke_width = max(1, width // 1000)
-                img = cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), stroke_width)
-
-                img = cv2.ellipse(
-                    img,
-                    center,
-                    radius,
-                    0,
-                    0,
-                    360,
-                    (0, 0, 255),
-                    stroke_width,
-                )
-                cv2.imshow(f"Face mask {k}", img)
-                cv2.waitKey(0)
-                cv2.destroyAllWindows()
 
         output_path.mkdir(exist_ok=True)
-        cv2.imwrite(output_path / p.name, img)
-        print(
-            f"Saved image:\t{output_path / p.name} ({len(list(faces.keys()))} faces, {time.time() - t} seconds)\n"
-        )
+        cv2.imwrite(output_path / p.name, blurred_img)
+        print(f"Saved image:\t{output_path / p.name}\n")
 
     if args.wait:
         input("Press Enter to exit...")
 
-    print(f"Finished, {time.time() - t0} seconds in total.)")
+    print(f"Finished, {time.time() - t0} seconds in total.")
 
 
 if __name__ == "__main__":
-    main()
+    root = TkinterDnD.Tk()
+    root.geometry("600x400")
+    root.title("inai-inai")
+
+    label = tk.Label(root, text="Drag & drop images here.")
+    label.pack(expand=True, fill="both")
+
+    root.drop_target_register(DND_FILES)
+    root.dnd_bind("<<Drop>>", on_drop)
+    root.mainloop()
