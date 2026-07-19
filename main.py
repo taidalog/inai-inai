@@ -46,7 +46,7 @@ def blur_faces(p: Path):
         print(f"Skipped image:\t{p} (File does not exist)")
         return
 
-    # t = time.time()
+    t = time.time()
 
     print(f"Detecting faces: {p}")
     q.put(f"Detecting faces: {p}\n")
@@ -57,14 +57,14 @@ def blur_faces(p: Path):
         print(f"Skipped image:\t{p} (No faces detected)")
         return
 
-    # print(
-    #     f"Detected faces:\t{p} ({len(list(faces.keys()))} faces, {time.time() - t} seconds)"
-    # )
-    # q.put(
-    #     f"Detected faces:\t{p} ({len(list(faces.keys()))} faces, {time.time() - t} seconds)\n"
-    # )
-    print(f"Detected faces:\t{p} ({len(list(faces.keys()))} faces)")
-    q.put(f"Detected faces:\t{p} ({len(list(faces.keys()))} faces)\n")
+    print(
+        f"Detected faces:\t{p} ({len(list(faces.keys()))} faces, {time.time() - t:.3f} seconds)"
+    )
+    q.put(
+        f"Detected faces:\t{p} ({len(list(faces.keys()))} faces, {time.time() - t:.3f} seconds)\n"
+    )
+
+    t = time.time()
 
     height, width, _ = img.shape
     if args.verbose:
@@ -135,10 +135,23 @@ def blur_faces(p: Path):
 
     output_path.mkdir(exist_ok=True)
     cv2.imwrite(output_path / p.name, img)
-    print(f"Saved image:\t{output_path / p.name}\n")
-    q.put(f"Saved image:\t{output_path / p.name}\n\n")
+    print(f"Saved image:\t{output_path / p.name} ({time.time() - t:.3f} seconds)\n")
+    q.put(f"Saved image:\t{output_path / p.name} ({time.time() - t:.3f} seconds)\n\n")
 
     return
+
+
+def blur_faces_multi(ps):
+    for p in ps:
+        print(f"Accepted file:\t{p}")
+        q.put(f"Accepted file:\t{p}\n")
+
+    q.put("\n")
+
+    for p in ps:
+        blur_faces(p)
+
+    q.put("\n> Drag & drop images here.\n")
 
 
 def on_drop(event):
@@ -152,9 +165,8 @@ def on_drop(event):
 
     # t0 = time.time()
 
-    for p in img_paths:
-        thread = threading.Thread(target=blur_faces, args=(p,))
-        thread.start()
+    thread = threading.Thread(target=blur_faces_multi, args=(img_paths,))
+    thread.start()
 
     if args.wait:
         input("Press Enter to exit...")
