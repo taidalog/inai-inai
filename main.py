@@ -152,7 +152,7 @@ def on_drop(event):
     if args.wait:
         input("Press Enter to exit...")
 
-    print(f"Finished, {time.time() - t0} seconds in total.")
+    # print(f"Finished, {time.time() - t0} seconds in total.")
 
 
 if __name__ == "__main__":
