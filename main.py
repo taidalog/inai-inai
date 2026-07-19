@@ -8,6 +8,7 @@ import time
 import tkinter as tk
 from tkinterdnd2 import DND_FILES, TkinterDnD
 import threading
+import queue
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -22,6 +23,7 @@ parser.add_argument("-o", "--output-directory", help="specify the output directo
 args = parser.parse_args()
 
 filename_pattern = r"^.+\.(jpe?g|png|bmp|tiff?|webp)$"
+q = queue.Queue()
 
 
 def maskf(height, width, center, radius):
@@ -44,9 +46,10 @@ def blur_faces(p: Path):
         print(f"Skipped image:\t{p} (File does not exist)")
         return
 
-    t = time.time()
+    # t = time.time()
 
     print(f"Detecting faces: {p}")
+    q.put(f"Detecting faces: {p}\n")
     img = cv2.imread(p)
     faces = RetinaFace.detect_faces(img)
 
@@ -54,11 +57,14 @@ def blur_faces(p: Path):
         print(f"Skipped image:\t{p} (No faces detected)")
         return
 
-    print(
-        f"Detected faces:\t{p} ({len(list(faces.keys()))} faces, {time.time() - t} seconds)"
-    )
-
-    t = time.time()
+    # print(
+    #     f"Detected faces:\t{p} ({len(list(faces.keys()))} faces, {time.time() - t} seconds)"
+    # )
+    # q.put(
+    #     f"Detected faces:\t{p} ({len(list(faces.keys()))} faces, {time.time() - t} seconds)\n"
+    # )
+    print(f"Detected faces:\t{p} ({len(list(faces.keys()))} faces)")
+    q.put(f"Detected faces:\t{p} ({len(list(faces.keys()))} faces)\n")
 
     height, width, _ = img.shape
     if args.verbose:
@@ -130,6 +136,7 @@ def blur_faces(p: Path):
     output_path.mkdir(exist_ok=True)
     cv2.imwrite(output_path / p.name, img)
     print(f"Saved image:\t{output_path / p.name}\n")
+    q.put(f"Saved image:\t{output_path / p.name}\n\n")
 
     return
 
@@ -155,14 +162,30 @@ def on_drop(event):
     # print(f"Finished, {time.time() - t0} seconds in total.")
 
 
+def process_queue():
+    try:
+        msg = q.get_nowait()
+        text.config(state=tk.NORMAL)
+        text.insert(tk.END, msg)
+        text.see(tk.END)
+        text.config(state=tk.DISABLED)
+    except queue.Empty:
+        pass
+    root.after(100, process_queue)
+
+
 if __name__ == "__main__":
     root = TkinterDnD.Tk()
-    root.geometry("600x400")
+    root.geometry("1200x600")
     root.title("inai-inai")
 
-    label = tk.Label(root, text="Drag & drop images here.")
-    label.pack(expand=True, fill="both")
+    text = tk.Text(root)
+    text.pack(expand=True, fill="both")
+
+    text.insert(tk.END, "> Drag & drop images here.\n")
+    text.config(state=tk.DISABLED)
 
     root.drop_target_register(DND_FILES)
     root.dnd_bind("<<Drop>>", on_drop)
+    process_queue()
     root.mainloop()
