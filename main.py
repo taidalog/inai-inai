@@ -7,6 +7,7 @@ import argparse
 import time
 import tkinter as tk
 from tkinterdnd2 import DND_FILES, TkinterDnD
+import threading
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -121,7 +122,16 @@ def blur_faces(p: Path):
             cv2.imshow(f"Face mask {k}", img)
             cv2.waitKey(0)
             cv2.destroyAllWindows()
-    return img
+
+    output_path = (
+        Path(args.output_directory) if args.output_directory else p.parent / "output"
+    )
+
+    output_path.mkdir(exist_ok=True)
+    cv2.imwrite(output_path / p.name, img)
+    print(f"Saved image:\t{output_path / p.name}\n")
+
+    return
 
 
 def on_drop(event):
@@ -136,17 +146,8 @@ def on_drop(event):
     t0 = time.time()
 
     for p in img_paths:
-        blurred_img = blur_faces(p)
-
-        output_path = (
-            Path(args.output_directory)
-            if args.output_directory
-            else p.parent / "output"
-        )
-
-        output_path.mkdir(exist_ok=True)
-        cv2.imwrite(output_path / p.name, blurred_img)
-        print(f"Saved image:\t{output_path / p.name}\n")
+        thread = threading.Thread(target=blur_faces, args=(p,))
+        thread.start()
 
     if args.wait:
         input("Press Enter to exit...")
