@@ -143,7 +143,7 @@ def on_drop(event):
         if Path(p).is_file() and re.match(filename_pattern, Path(p).name.lower())
     ]
 
-    t0 = time.time()
+    # t0 = time.time()
 
     for p in img_paths:
         thread = threading.Thread(target=blur_faces, args=(p,))
