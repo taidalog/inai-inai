@@ -84,7 +84,14 @@ module Main =
         let t2 = DateTime.Now
 
         let fileinfo = FileInfo file
-        let outputPath = Path.Join [| "output"; fileinfo.Name |]
+
+        let outputDirectory =
+            DirectoryInfo(Path.Join [| AppContext.BaseDirectory; "output" |])
+
+        if not outputDirectory.Exists then
+            outputDirectory.Create()
+
+        let outputPath = Path.Join [| outputDirectory.FullName; fileinfo.Name |]
         Cv2.ImWrite(outputPath, mat) |> ignore
 
         printfn $"Saved image:\t\t%s{outputPath} (%f{(DateTime.Now - t2).TotalSeconds} seconds)\n"
