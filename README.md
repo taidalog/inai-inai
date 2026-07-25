@@ -101,7 +101,7 @@ This product includes the following third-party libraries:
 - Microsoft.Win32.SystemEvents
 - System.Drawing.Common
 
-For a complete list of dependencies and their licenses, see [licenses.txt](./licenses.txt) and [NOTICE](./NOTICE).
+For a complete list of dependencies and their licenses, see [licenses.md](./licenses.md) and [NOTICE](./NOTICE).
 
 ## Copyright
 
