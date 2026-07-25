@@ -7,7 +7,7 @@ open FaceONNX
 open OpenCvSharp
 
 module Main =
-    let blurFaces (faceDetector: FaceDetector) (file: string) : unit =
+    let blurFaces (faceDetector: FaceDetector) (outputDirectoryPath: string) (file: string) : unit =
         printfn $"Detecting faces:\t%s{file}"
 
         let t0 = DateTime.Now
@@ -85,8 +85,7 @@ module Main =
 
         let fileinfo = FileInfo file
 
-        let outputDirectory =
-            DirectoryInfo(Path.Join [| AppContext.BaseDirectory; "output" |])
+        let outputDirectory = DirectoryInfo outputDirectoryPath
 
         if not outputDirectory.Exists then
             outputDirectory.Create()
@@ -124,9 +123,13 @@ module Main =
                 else
                     printfn $"Processing {Array.length files} images...\n"
 
+                    let outputDirectory =
+                        DirectoryInfo(Path.Join [| AppContext.BaseDirectory; "output" |])
+
                     use faceDetector: FaceDetector = new FaceDetector()
 
-                    files |> Array.iter (fun (file: string) -> blurFaces faceDetector file)
+                    files
+                    |> Array.iter (fun (filePath: string) -> blurFaces faceDetector outputDirectory.FullName filePath)
 
                     printfn "Press any key to exit..."
                     Console.ReadKey() |> ignore
@@ -135,9 +138,13 @@ module Main =
         else
             printfn $"Processing {Array.length args} images...\n"
 
+            let outputDirectory =
+                DirectoryInfo(Path.Join [| AppContext.BaseDirectory; "output" |])
+
             use faceDetector: FaceDetector = new FaceDetector()
 
-            args |> Array.iter (fun (file: string) -> blurFaces faceDetector file)
+            args
+            |> Array.iter (fun (filePath: string) -> blurFaces faceDetector outputDirectory.FullName filePath)
 
             printfn "Press any key to exit..."
             Console.ReadKey() |> ignore
