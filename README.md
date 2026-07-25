@@ -47,6 +47,25 @@ python main.py
 
 This application is licensed under [Apache License Version 2.0](https://github.com/taidalog/inai-inai/blob/main/LICENSE).
 
+### Third-party License Compliance
+
+This product includes the following third-party libraries:
+
+**Apache License 2.0:**
+
+- OpenCvSharp5
+
+**MIT License:**
+
+- FaceONNX
+- FSharp.Core
+- Microsoft.ML.OnnxRuntime.Managed
+- UMapx
+- Microsoft.Win32.SystemEvents
+- System.Drawing.Common
+
+For a complete list of dependencies and their licenses, see [licenses.txt](./licenses.txt) and [NOTICE](./NOTICE).
+
 ## Copyright
 
 Copyright 2026 taidalog
