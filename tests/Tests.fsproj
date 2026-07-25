@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\App.fsproj" />
+    <ProjectReference Include="..\src\InaiInai.fsproj" />
   </ItemGroup>
 
 </Project>
