@@ -14,10 +14,11 @@ module Main =
         let inputDirectoryPath = @"input"
         let inputDirectory = DirectoryInfo inputDirectoryPath
 
-        if inputDirectory.Exists |> not then
+        if not inputDirectory.Exists then
             printfn $"Error: %s{inputDirectory.FullName} does not exist."
             printfn $"Create %s{inputDirectory.FullName}, put image files in it, and rerun."
             printfn "Press any key to exit..."
+            Console.ReadKey() |> ignore
             1
         else
             let files = Directory.GetFiles(inputDirectoryPath, "*.*")
@@ -25,6 +26,7 @@ module Main =
             if Array.length files = 0 then
                 printfn $"No image files found."
                 printfn $"Put image files in %s{inputDirectory.FullName} and rerun."
+                printfn "Press any key to exit..."
                 Console.ReadKey() |> ignore
                 0
             else
