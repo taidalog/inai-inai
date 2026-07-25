@@ -7,6 +7,24 @@ open FaceONNX
 open OpenCvSharp
 
 module Main =
+    let uniqueFileName (directoryPath: string) (fileName: string) : string =
+        let directory = DirectoryInfo directoryPath
+        let fileBaseName = Path.GetFileNameWithoutExtension fileName
+        let fileExtension = Path.GetExtension fileName
+
+        let rec loop (dir: string) (bas: string) (ext: string) (n: int) : string =
+            let duplicationCount = if n = 0 then "" else $" (%d{n})"
+
+            let candidatePath =
+                Path.Join [| directory.FullName; $"%s{bas}%s{duplicationCount}%s{ext}" |]
+
+            if Path.Exists candidatePath |> not then
+                candidatePath
+            else
+                loop dir bas ext (n + 1)
+
+        loop directoryPath fileBaseName fileExtension 0
+
     let blurFaces (faceDetector: FaceDetector) (outputDirectoryPath: string) (file: string) : unit =
         printfn $"Detecting faces:\t%s{file}"
 
@@ -90,7 +108,7 @@ module Main =
         if not outputDirectory.Exists then
             outputDirectory.Create()
 
-        let outputPath = Path.Join [| outputDirectory.FullName; fileinfo.Name |]
+        let outputPath = uniqueFileName outputDirectory.FullName fileinfo.Name
         Cv2.ImWrite(outputPath, mat) |> ignore
 
         printfn $"Saved image:\t\t%s{outputPath} (%f{(DateTime.Now - t2).TotalSeconds} seconds)\n"
