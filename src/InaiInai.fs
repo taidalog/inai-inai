@@ -35,14 +35,17 @@ module Main =
             let res: FaceDetectionResult array = faceDetector.Forward bitmap
             res
 
-        printfn
-            $"Detected face(s):\t%s{file} ({Array.length faces} faces, %f{(DateTime.Now - t0).TotalSeconds} seconds)"
+        printfn $"Detected face(s):\t{Array.length faces} faces, %f{(DateTime.Now - t0).TotalSeconds} seconds"
 
         let t1 = DateTime.Now
 
         let bytes: byte array = File.ReadAllBytes file
         use mat: Mat = Cv2.ImDecode(bytes, ImreadModes.Color)
-        printfn "Image dimensions:\t%d x %d" mat.Height mat.Width
+        printfn "Image dimensions:\t%d x %d" mat.Width mat.Height
+
+        let fileinfo = FileInfo file
+        printfn "Image size:\t\t%f MB" (float fileinfo.Length / 1024. / 1024.)
+
         // Cv2.ImShow("Original Image", mat)
         // Cv2.WaitKey 0 |> ignore
         // Cv2.DestroyAllWindows()
@@ -50,13 +53,13 @@ module Main =
         faces
         |> Array.iter (fun (x: FaceDetectionResult) ->
             let rect = x.Rectangle
-            printfn "Face rectangle:\t\t%A" rect
+            // printfn "Face rectangle:\t\t%A" rect
 
             use mask: Mat = new Mat(rect.Height, rect.Width, MatType.CV_8UC3, Scalar.Black)
             let center = new Point(rect.Width / 2, rect.Height / 2)
             let axes = new Size(rect.Width / 2, rect.Height / 2)
-            printfn "Mask center:\t\t%A" center
-            printfn "Mask axes:\t\t%A" axes
+            // printfn "Mask center:\t\t%A" center
+            // printfn "Mask axes:\t\t%A" axes
 
             Cv2.Ellipse(
                 img = mask,
@@ -80,7 +83,7 @@ module Main =
             // Cv2.DestroyAllWindows()
 
             let ksize: Size = new Size(max 1 (mat.Width / 40), max 1 (mat.Height / 40))
-            printfn "ksize:\t\t\t%A" ksize
+            // printfn "ksize:\t\t\t%A" ksize
 
             use facialAreaBlurred = new Mat()
 
@@ -97,11 +100,9 @@ module Main =
         // Cv2.DestroyAllWindows()
         )
 
-        printfn $"Masked image:\t\t%s{file} (%f{(DateTime.Now - t1).TotalSeconds} seconds)"
+        printfn $"Masked image:\t\t%f{(DateTime.Now - t1).TotalSeconds} seconds"
 
         let t2 = DateTime.Now
-
-        let fileinfo = FileInfo file
 
         let outputDirectory = DirectoryInfo outputDirectoryPath
 
