@@ -90,35 +90,49 @@ module Main =
         printfn $"Saved image:\t\t%s{outputPath} (%f{(DateTime.Now - t2).TotalSeconds} seconds)\n"
 
     [<EntryPoint>]
-    let main (_: string array) : int =
+    let main (args: string array) : int =
         printfn "inai-inai version 0.2.0\n"
 
-        let inputDirectoryPath = @"input"
-        let inputDirectory = DirectoryInfo inputDirectoryPath
+        if Array.length args = 0 then
 
-        if not inputDirectory.Exists then
-            printfn $"Error: %s{inputDirectory.FullName} does not exist."
-            printfn $"Create %s{inputDirectory.FullName}, put image files in it, and rerun."
+            let inputDirectoryPath = @"input"
+            let inputDirectory = DirectoryInfo inputDirectoryPath
+
+            if not inputDirectory.Exists then
+                printfn $"Error: %s{inputDirectory.FullName} does not exist."
+                printfn $"Create %s{inputDirectory.FullName}, put image files in it, and rerun."
+                printfn "Press any key to exit..."
+                Console.ReadKey() |> ignore
+                1
+
+            else
+                let files = Directory.GetFiles(inputDirectoryPath, "*.*")
+
+                if Array.length files = 0 then
+                    printfn $"No image files found."
+                    printfn $"Put image files in %s{inputDirectory.FullName} and rerun."
+                    printfn "Press any key to exit..."
+                    Console.ReadKey() |> ignore
+                    0
+                else
+                    printfn $"Processing {Array.length files} images...\n"
+
+                    use faceDetector: FaceDetector = new FaceDetector()
+
+                    files |> Array.iter (fun (file: string) -> blurFaces faceDetector file)
+
+                    printfn "Press any key to exit..."
+                    Console.ReadKey() |> ignore
+
+                    0
+        else
+            printfn $"Processing {Array.length args} images...\n"
+
+            use faceDetector: FaceDetector = new FaceDetector()
+
+            args |> Array.iter (fun (file: string) -> blurFaces faceDetector file)
+
             printfn "Press any key to exit..."
             Console.ReadKey() |> ignore
-            1
-        else
-            let files = Directory.GetFiles(inputDirectoryPath, "*.*")
 
-            if Array.length files = 0 then
-                printfn $"No image files found."
-                printfn $"Put image files in %s{inputDirectory.FullName} and rerun."
-                printfn "Press any key to exit..."
-                Console.ReadKey() |> ignore
-                0
-            else
-                printfn $"Processing {Array.length files} images...\n"
-
-                use faceDetector: FaceDetector = new FaceDetector()
-
-                files |> Array.iter (fun (file: string) -> blurFaces faceDetector file)
-
-                printfn "Press any key to exit..."
-                Console.ReadKey() |> ignore
-
-                0
+            0
