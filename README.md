@@ -4,40 +4,77 @@ A privacy tool that blurs faces in images.
 
 The name "inai-inai" comes from "inai inai baa!", the Japanese version of peek-a-boo.
 
+Written in F#.
+
 ## Features
 
-- Detects faces in an image and blurs them.
+- Detects faces in images and blurs them.
 
 ## Requirements
 
-- Python 3.13
+- Windows (x64)
+- .NET 8 or later
 
-## Getting Started
+## Building
 
-Set up the environment:
-
-```
-py -3.13 -m venv .venv
-.venv\Scripts\activate
-py -m pip install --upgrade pip
-py -m pip install -r requirements.txt
-```
-
-Then run the script:
+Clone the repository:
 
 ```
-python main.py
+git clone git@github.com:taidalog/inai-inai.git
+cd inai-inai
+```
+
+Then build the project:
+
+```
+dotnet build
 ```
 
 ## Usage
 
-1. Set up the environment.
-1. Run the script (a white window saying "Drag & drop images here." will appear).
-1. Drag and drop your image files onto the window.
+There are three ways to run the application.
 
-## Known Issue
+### Usage 1
 
-- The application stops when an input image file contains whitespace or Japanese characters in its filename.
+1. Create an `input` directory.
+1. Place image files in the `input` directory.
+1. Run the application DLL:
+
+   ```
+   dotnet .\src\bin\Debug\net10.0\win-x64\inai-inai.dll
+   ```
+
+Output images are saved in the `output` directory next to the DLL.
+
+### Usage 2
+
+1. Publish the application as a self-contained executable:
+
+   ```
+   dotnet publish -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=embedded
+   ```
+
+1. Create an `input` directory next to `inai-inai.exe`.
+1. Place image files in the `input` directory.
+1. Run the application by double-clicking `inai-inai.exe`.
+
+Output images are saved in the `output` directory next to `inai-inai.exe`.
+
+### Usage 3
+
+1. Publish the application as a self-contained executable:
+
+   ```
+   dotnet publish -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=embedded
+   ```
+
+1. Drag and drop image files onto `inai-inai.exe`.
+
+Output images are saved in the `output` directory next to `inai-inai.exe`.
+
+## Known Issues
+
+- None known.
 
 ## Release Notes
 
