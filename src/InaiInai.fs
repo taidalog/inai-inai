@@ -26,7 +26,7 @@ module Main =
         loop directoryPath fileBaseName fileExtension 0
 
     let blurFaces (faceDetector: FaceDetector) (outputDirectoryPath: string) (file: string) : unit =
-        printfn $"Detecting faces:\t%s{file}"
+        printfn $"Detecting faces in:\t%s{file}"
 
         let t0 = DateTime.Now
 
@@ -35,16 +35,16 @@ module Main =
             let res: FaceDetectionResult array = faceDetector.Forward bitmap
             res
 
-        printfn $"Detected face(s):\t{Array.length faces} faces, %f{(DateTime.Now - t0).TotalSeconds} seconds"
+        printfn $"Detected face(s):\t{Array.length faces} face(s), %f{(DateTime.Now - t0).TotalSeconds} seconds"
 
         let t1 = DateTime.Now
 
         let bytes: byte array = File.ReadAllBytes file
         use mat: Mat = Cv2.ImDecode(bytes, ImreadModes.Color)
-        printfn "Image dimensions:\t%d x %d" mat.Width mat.Height
+        printfn "Image dimensions:\t%d x %d pixels" mat.Width mat.Height
 
         let fileinfo = FileInfo file
-        printfn "Image size:\t\t%f MB" (float fileinfo.Length / 1024. / 1024.)
+        printfn $"Image size:\t\t{float fileinfo.Length / 1024. / 1024.:F2} MB"
 
         // Cv2.ImShow("Original Image", mat)
         // Cv2.WaitKey 0 |> ignore
@@ -100,7 +100,7 @@ module Main =
         // Cv2.DestroyAllWindows()
         )
 
-        printfn $"Masked image:\t\t%f{(DateTime.Now - t1).TotalSeconds} seconds"
+        printfn $"Masking time:\t\t%f{(DateTime.Now - t1).TotalSeconds} seconds"
 
         let t2 = DateTime.Now
 
@@ -112,7 +112,7 @@ module Main =
         let outputPath = uniqueFileName outputDirectory.FullName fileinfo.Name
         Cv2.ImWrite(outputPath, mat) |> ignore
 
-        printfn $"Saved image:\t\t%s{outputPath} (%f{(DateTime.Now - t2).TotalSeconds} seconds)\n"
+        printfn $"Saved image:\t\t%s{outputPath}, %f{(DateTime.Now - t2).TotalSeconds} seconds\n"
 
     [<EntryPoint>]
     let main (args: string array) : int =
@@ -124,8 +124,8 @@ module Main =
             let inputDirectory = DirectoryInfo inputDirectoryPath
 
             if not inputDirectory.Exists then
-                printfn $"Error: %s{inputDirectory.FullName} does not exist."
-                printfn $"Create %s{inputDirectory.FullName}, put image files in it, and rerun."
+                printfn $"Error: The directory %s{inputDirectory.FullName} does not exist."
+                printfn $"Create %s{inputDirectory.FullName}, add image files, and run the program again."
                 printfn "Press any key to exit..."
                 Console.ReadKey() |> ignore
                 1
@@ -134,13 +134,13 @@ module Main =
                 let files = Directory.GetFiles(inputDirectoryPath, "*.*")
 
                 if Array.length files = 0 then
-                    printfn $"No image files found."
-                    printfn $"Put image files in %s{inputDirectory.FullName} and rerun."
+                    printfn $"No image files were found."
+                    printfn $"Place image files in %s{inputDirectory.FullName} and run the program again."
                     printfn "Press any key to exit..."
                     Console.ReadKey() |> ignore
                     0
                 else
-                    printfn $"Processing {Array.length files} images...\n"
+                    printfn $"Processing {Array.length files} image(s)...\n"
 
                     let outputDirectory =
                         DirectoryInfo(Path.Join [| AppContext.BaseDirectory; "output" |])
@@ -155,7 +155,7 @@ module Main =
 
                     0
         else
-            printfn $"Processing {Array.length args} images...\n"
+            printfn $"Processing {Array.length args} image(s)...\n"
 
             let outputDirectory =
                 DirectoryInfo(Path.Join [| AppContext.BaseDirectory; "output" |])
