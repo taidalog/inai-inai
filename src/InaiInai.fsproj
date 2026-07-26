@@ -5,6 +5,12 @@
     <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>inai-inai</AssemblyName>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <Version>0.2.0</Version>
+    <Authors>taidalog</Authors>
+    <Description>A privacy tool that blurs faces in images.</Description>
+    <Copyright>Copyright 2026 taidalog</Copyright>
+    <RepositoryUrl>https://github.com/taidalog/inai-inai</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>
