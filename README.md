@@ -9,6 +9,7 @@ Written in F#.
 ## Features
 
 - Detects faces in images and blurs them.
+- Works locally, doesn't upload your images.
 
 ## Requirements
 
@@ -30,13 +31,23 @@ Then build the project:
 dotnet build
 ```
 
+## Publishing
+
+(Assuming the repository is already cloned and the current directory is `inai-inai`)
+
+Package the project with the following options:
+
+```
+dotnet publish -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=embedded
+```
+
 ## Usage
 
-There are three ways to run the application.
+There are four ways to run the application.
 
 ### Usage 1
 
-1. Create an `input` directory.
+1. Create an `input` directory next to `inai-inai.dll`.
 1. Place image files in the `input` directory.
 1. Run the application DLL:
 
@@ -48,12 +59,6 @@ Output images are saved in the `output` directory next to the DLL.
 
 ### Usage 2
 
-1. Publish the application as a self-contained executable:
-
-   ```
-   dotnet publish -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=embedded
-   ```
-
 1. Create an `input` directory next to `inai-inai.exe`.
 1. Place image files in the `input` directory.
 1. Run the application by double-clicking `inai-inai.exe`.
@@ -62,13 +67,19 @@ Output images are saved in the `output` directory next to `inai-inai.exe`.
 
 ### Usage 3
 
-1. Publish the application as a self-contained executable:
-
-   ```
-   dotnet publish -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=embedded
-   ```
-
 1. Drag and drop image files onto `inai-inai.exe`.
+
+Output images are saved in the `output` directory next to `inai-inai.exe`.
+
+### Usage 4
+
+1. Create an `input` directory.
+1. Place image files in the `input` directory.
+1. Run the published executable:
+
+   ```
+   dotnet .\src\bin\Release\net10.0\win-x64\publish\inai-inai.exe
+   ```
 
 Output images are saved in the `output` directory next to `inai-inai.exe`.
 
