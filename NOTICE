@@ -1,0 +1,39 @@
+inai-inai
+
+Copyright 2025
+
+This product includes software developed by and licensed under the following terms:
+
+APACHE LICENSE 2.0 DEPENDENCIES:
+
+- OpenCvSharp5 (https://github.com/shimat/opencvsharp)
+  Copyright 2008-2026
+  Licensed under Apache License 2.0
+
+MIT LICENSE DEPENDENCIES:
+
+- FaceONNX (https://github.com/FaceONNX/FaceONNX)
+  Copyright © 2020-2025 Valery Asiryan
+  Licensed under MIT License
+
+- FSharp.Core (https://github.com/dotnet/fsharp)
+  Copyright © Microsoft Corporation. All rights reserved.
+  Licensed under MIT License
+
+- Microsoft.ML.OnnxRuntime.Managed (https://github.com/Microsoft/onnxruntime)
+  Copyright © Microsoft Corporation. All rights reserved.
+  Licensed under MIT License
+
+- UMapx (https://github.com/asiryan/UMapx)
+  Copyright © 2015-2025 Valery Asiryan
+  Licensed under MIT License
+
+- Microsoft.Win32.SystemEvents (https://github.com/dotnet/runtime)
+  Copyright © Microsoft Corporation. All rights reserved.
+  Licensed under MIT License
+
+- System.Drawing.Common (https://github.com/dotnet/winforms)
+  Copyright © Microsoft Corporation. All rights reserved.
+  Licensed under MIT License
+
+For details regarding all dependencies, see licenses.md.

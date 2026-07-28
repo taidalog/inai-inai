@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/InaiInai.fsproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Tests.fsproj" />
+  </Folder>
+</Solution>
