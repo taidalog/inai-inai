@@ -152,10 +152,6 @@ module Main =
                 else
                     Environment.CurrentDirectory
 
-            printfn "AppContext.BaseDirectory:\t%s" AppContext.BaseDirectory
-            printfn "Environment.CurrentDirectory:\t%s" Environment.CurrentDirectory
-            printfn "workingDirectory:\t\t%s" workingDirectory
-
             let outputDirectory = Path.Join [| workingDirectory; "output" |] |> DirectoryInfo
 
             if Array.length args = 0 then
