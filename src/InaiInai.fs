@@ -19,6 +19,7 @@ namespace InaiInai
 open System
 open System.IO
 open System.Drawing
+open System.Diagnostics
 open FaceONNX
 open OpenCvSharp
 
@@ -134,54 +135,71 @@ module Main =
     let main (args: string array) : int =
         printfn "inai-inai version 0.2.0\n"
 
-        if Array.length args = 0 then
+        let pid: int =
+            use p = Process.GetCurrentProcess()
+            p.Id
 
-            let inputDirectoryPath = @"input"
-            let inputDirectory = DirectoryInfo inputDirectoryPath
+        match Process.getParentPid pid with
+        | None ->
+            printfn "Error: Parent PID not found."
+            2
+        | Some ppid ->
+            let isdd = Utility.isDnD ppid (Array.length args)
 
-            if not inputDirectory.Exists then
-                printfn $"Error: The directory %s{inputDirectory.FullName} does not exist."
-                printfn $"Create %s{inputDirectory.FullName}, add image files, and run the program again."
+            let workingDirectory =
+                if isdd then
+                    AppContext.BaseDirectory
+                else
+                    Environment.CurrentDirectory
+
+            printfn "AppContext.BaseDirectory:\t%s" AppContext.BaseDirectory
+            printfn "Environment.CurrentDirectory:\t%s" Environment.CurrentDirectory
+            printfn "workingDirectory:\t\t%s" workingDirectory
+
+            let outputDirectory = Path.Join [| workingDirectory; "output" |] |> DirectoryInfo
+
+            if Array.length args = 0 then
+
+                let inputDirectory = Path.Join [| workingDirectory; @"input" |] |> DirectoryInfo
+
+                if not inputDirectory.Exists then
+                    printfn $"Error: The directory %s{inputDirectory.FullName} does not exist."
+                    printfn $"Create %s{inputDirectory.FullName}, add image files, and run the program again."
+                    printfn "Press any key to exit..."
+                    Console.ReadKey() |> ignore
+                    1
+
+                else
+                    let files = Directory.GetFiles(inputDirectory.FullName, "*.*")
+
+                    if Array.length files = 0 then
+                        printfn $"No image files were found."
+                        printfn $"Place image files in %s{inputDirectory.FullName} and run the program again."
+                        printfn "Press any key to exit..."
+                        Console.ReadKey() |> ignore
+                        0
+                    else
+                        printfn $"Processing {Array.length files} image(s)...\n"
+
+                        use faceDetector: FaceDetector = new FaceDetector()
+
+                        files
+                        |> Array.iter (fun (filePath: string) ->
+                            blurFaces faceDetector outputDirectory.FullName filePath)
+
+                        printfn "Press any key to exit..."
+                        Console.ReadKey() |> ignore
+
+                        0
+            else
+                printfn $"Processing {Array.length args} image(s)...\n"
+
+                use faceDetector: FaceDetector = new FaceDetector()
+
+                args
+                |> Array.iter (fun (filePath: string) -> blurFaces faceDetector outputDirectory.FullName filePath)
+
                 printfn "Press any key to exit..."
                 Console.ReadKey() |> ignore
-                1
 
-            else
-                let files = Directory.GetFiles(inputDirectoryPath, "*.*")
-
-                if Array.length files = 0 then
-                    printfn $"No image files were found."
-                    printfn $"Place image files in %s{inputDirectory.FullName} and run the program again."
-                    printfn "Press any key to exit..."
-                    Console.ReadKey() |> ignore
-                    0
-                else
-                    printfn $"Processing {Array.length files} image(s)...\n"
-
-                    let outputDirectory =
-                        DirectoryInfo(Path.Join [| AppContext.BaseDirectory; "output" |])
-
-                    use faceDetector: FaceDetector = new FaceDetector()
-
-                    files
-                    |> Array.iter (fun (filePath: string) -> blurFaces faceDetector outputDirectory.FullName filePath)
-
-                    printfn "Press any key to exit..."
-                    Console.ReadKey() |> ignore
-
-                    0
-        else
-            printfn $"Processing {Array.length args} image(s)...\n"
-
-            let outputDirectory =
-                DirectoryInfo(Path.Join [| AppContext.BaseDirectory; "output" |])
-
-            use faceDetector: FaceDetector = new FaceDetector()
-
-            args
-            |> Array.iter (fun (filePath: string) -> blurFaces faceDetector outputDirectory.FullName filePath)
-
-            printfn "Press any key to exit..."
-            Console.ReadKey() |> ignore
-
-            0
+                0
