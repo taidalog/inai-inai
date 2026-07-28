@@ -41,21 +41,23 @@ Package the project with the following options:
 dotnet publish -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=embedded
 ```
 
+The options above enable you to move the EXE file anywhere on your computer.
+
 ## Usage
 
 There are four ways to run the application.
 
 ### Usage 1
 
-1. Create an `input` directory next to `inai-inai.dll`.
+1. Create an `input` directory in the current directory.
 1. Place image files in the `input` directory.
-1. Run the application DLL:
+1. Run the application DLL using the command below. The path to the DLL depends on your current directory:
 
    ```
    dotnet .\src\bin\Debug\net10.0\win-x64\inai-inai.dll
    ```
 
-Output images are saved in the `output` directory next to the DLL.
+Output images are saved in the `output` directory in the current directory.
 
 ### Usage 2
 
@@ -73,15 +75,15 @@ Output images are saved in the `output` directory next to `inai-inai.exe`.
 
 ### Usage 4
 
-1. Create an `input` directory.
+1. Create an `input` directory in the current directory.
 1. Place image files in the `input` directory.
-1. Run the published executable:
+1. Run the published executable using the command below. The path to the EXE depends on your current directory:
 
    ```
-   dotnet .\src\bin\Release\net10.0\win-x64\publish\inai-inai.exe
+   .\inai-inai.exe
    ```
 
-Output images are saved in the `output` directory next to `inai-inai.exe`.
+Output images are saved in the `output` directory in the current directory.
 
 ## Known Issues
 
