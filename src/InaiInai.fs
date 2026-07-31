@@ -22,6 +22,7 @@ open System.Drawing
 open System.Diagnostics
 open FaceONNX
 open OpenCvSharp
+open OpenCvSharp.GdipExtensions
 
 module Main =
     let uniqueFileName (directoryPath: string) (fileName: string) : string =
@@ -47,17 +48,14 @@ module Main =
 
         let t0 = DateTime.Now
 
-        let faces: FaceDetectionResult array =
-            use bitmap: Bitmap = new Bitmap(file)
-            let res: FaceDetectionResult array = faceDetector.Forward bitmap
-            res
+        use bitmap: Bitmap = new Bitmap(file)
 
+        let faces: FaceDetectionResult array = faceDetector.Forward bitmap
         printfn $"Detected face(s):\t{Array.length faces} face(s), %f{(DateTime.Now - t0).TotalSeconds} seconds"
 
         let t1 = DateTime.Now
 
-        let bytes: byte array = File.ReadAllBytes file
-        use mat: Mat = Cv2.ImDecode(bytes, ImreadModes.Color)
+        use mat: Mat = bitmap.ToMat()
         printfn "Image dimensions:\t%d x %d pixels" mat.Width mat.Height
 
         let fileinfo = FileInfo file
