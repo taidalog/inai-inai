@@ -20,8 +20,11 @@ open System
 open System.IO
 open System.Drawing
 open System.Diagnostics
+open System.Reflection
 open FaceONNX
 open OpenCvSharp
+open OpenCvSharp.GdipExtensions
+open Argu
 
 module Main =
     let uniqueFileName (directoryPath: string) (fileName: string) : string =
@@ -42,22 +45,43 @@ module Main =
 
         loop directoryPath fileBaseName fileExtension 0
 
-    let blurFaces (faceDetector: FaceDetector) (outputDirectoryPath: string) (file: string) : unit =
+    let getImageOrientationProperty (bitmap: Bitmap) : Imaging.PropertyItem option =
+        let orientationPropertyId = 0x0112
+
+        if Array.contains orientationPropertyId bitmap.PropertyIdList then
+            Some(bitmap.GetPropertyItem orientationPropertyId)
+        else
+            None
+
+    let isFaceWithinBitmap (width: int) (height: int) (x: FaceDetectionResult) : bool =
+        let rect = x.Rectangle
+
+        rect.X >= 0
+        && rect.Y >= 0
+        && rect.X + rect.Width <= width
+        && rect.Y + rect.Height <= height
+
+    let isSupportedFileFormat (x: string) : bool =
+        let extensionName: string = Path.GetExtension x
+
+        List.contains
+            (extensionName.ToUpper())
+            [ ".BMP"; ".GIF"; ".EXIF"; ".JPG"; ".JPEG"; ".JPE"; ".PNG"; ".TIFF"; ".TIF" ]
+
+    let blurFaces (faceDetector: FaceDetector) (outputDirectoryPath: string) (file: string) (verbose: bool) : unit =
         printfn $"Detecting faces in:\t%s{file}"
 
         let t0 = DateTime.Now
 
-        let faces: FaceDetectionResult array =
-            use bitmap: Bitmap = new Bitmap(file)
-            let res: FaceDetectionResult array = faceDetector.Forward bitmap
-            res
+        use bitmap: Bitmap = new Bitmap(file)
+        let orientation: Imaging.PropertyItem option = getImageOrientationProperty bitmap
 
+        let faces: FaceDetectionResult array = faceDetector.Forward bitmap
         printfn $"Detected face(s):\t{Array.length faces} face(s), %f{(DateTime.Now - t0).TotalSeconds} seconds"
 
         let t1 = DateTime.Now
 
-        let bytes: byte array = File.ReadAllBytes file
-        use mat: Mat = Cv2.ImDecode(bytes, ImreadModes.Color)
+        use mat: Mat = bitmap.ToMat()
         printfn "Image dimensions:\t%d x %d pixels" mat.Width mat.Height
 
         let fileinfo = FileInfo file
@@ -68,15 +92,22 @@ module Main =
         // Cv2.DestroyAllWindows()
 
         faces
+        |> Array.filter (fun (x: FaceDetectionResult) -> isFaceWithinBitmap bitmap.Width bitmap.Height x)
         |> Array.iter (fun (x: FaceDetectionResult) ->
             let rect = x.Rectangle
-            // printfn "Face rectangle:\t\t%A" rect
 
-            use mask: Mat = new Mat(rect.Height, rect.Width, MatType.CV_8UC3, Scalar.Black)
+            if verbose then
+                printfn "Face rectangle:\t\t%A" rect
+
+            // use mask: Mat = new Mat(rect.Height, rect.Width, MatType.CV_8UC3, Scalar.Black)
+            // Caused an exception with `Cv2.CopyTo`, so replaced `MatType.CV_8UC3` with `MatType.CV_8U`.
+            use mask: Mat = new Mat(rect.Height, rect.Width, MatType.CV_8U, Scalar.Black)
             let center = new Point(rect.Width / 2, rect.Height / 2)
             let axes = new Size(rect.Width / 2, rect.Height / 2)
-            // printfn "Mask center:\t\t%A" center
-            // printfn "Mask axes:\t\t%A" axes
+
+            if verbose then
+                printfn "Mask center:\t\t%A" center
+                printfn "Mask axes:\t\t%A" axes
 
             Cv2.Ellipse(
                 img = mask,
@@ -100,7 +131,9 @@ module Main =
             // Cv2.DestroyAllWindows()
 
             let ksize: Size = new Size(max 1 (mat.Width / 40), max 1 (mat.Height / 40))
-            // printfn "ksize:\t\t\t%A" ksize
+
+            if verbose then
+                printfn "ksize:\t\t\t%A" ksize
 
             use facialAreaBlurred = new Mat()
 
@@ -126,76 +159,128 @@ module Main =
         if not outputDirectory.Exists then
             outputDirectory.Create()
 
+        use dstBitmap: Bitmap = new Bitmap(file)
+        mat.ToBitmap dstBitmap
+
+        orientation |> Option.iter (fun x -> dstBitmap.SetPropertyItem x)
+
         let outputPath = uniqueFileName outputDirectory.FullName fileinfo.Name
-        Cv2.ImWrite(outputPath, mat) |> ignore
+        dstBitmap.Save outputPath
+        // Cv2.ImWrite(outputPath, mat) |> ignore
 
         printfn $"Saved image:\t\t%s{outputPath}, %f{(DateTime.Now - t2).TotalSeconds} seconds\n"
 
     [<EntryPoint>]
     let main (args: string array) : int =
-        printfn "inai-inai version 0.2.0\n"
+        let errorHandler =
+            ProcessExiter(
+                colorizer =
+                    function
+                    | ErrorCode.HelpText -> None
+                    | _ -> Some ConsoleColor.Red
+            )
 
-        let pid: int =
-            use p = Process.GetCurrentProcess()
-            p.Id
+        let parser =
+            ArgumentParser.Create<Arguments>(programName = "inai-inai", errorHandler = errorHandler)
 
-        match Process.getParentPid pid with
-        | None ->
-            printfn "Error: Parent PID not found."
-            2
-        | Some ppid ->
-            let isdd = Utility.isDnD ppid (Array.length args)
+        let results = parser.Parse args
 
-            let workingDirectory =
-                if isdd then
-                    AppContext.BaseDirectory
+        let versionString =
+            Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion
+
+        let version = results.Contains Arguments.Version
+
+        if version then
+            printfn "%s" versionString
+            0
+        else
+            printfn "inai-inai version %s\n" versionString
+
+            let pathsArgument: string list = results.GetResult(Paths, defaultValue = [])
+
+            let inputDirectoryArgument =
+                results.GetResult(Input_Directory, defaultValue = "input")
+
+            let outputDirectoryArgument =
+                results.GetResult(Output_Directory, defaultValue = "output")
+
+            let verbose = results.Contains Verbose
+
+            let pid: int =
+                use p = Process.GetCurrentProcess()
+                p.Id
+
+            match Process.getParentPid pid with
+            | None ->
+                printfn "Error: Parent PID not found."
+                2
+            | Some ppid ->
+                let isdd = Utility.isDnD ppid (Array.length args)
+
+                let workingDirectory =
+                    if isdd then
+                        AppContext.BaseDirectory
+                    else
+                        Environment.CurrentDirectory
+
+                let outputDirectory =
+                    Path.Join [| workingDirectory; outputDirectoryArgument |] |> DirectoryInfo
+
+                if List.length pathsArgument = 0 then
+
+                    let inputDirectory =
+                        Path.Join [| workingDirectory; inputDirectoryArgument |] |> DirectoryInfo
+
+                    if not inputDirectory.Exists then
+                        printfn $"Error: The directory %s{inputDirectory.FullName} does not exist."
+                        printfn $"Create %s{inputDirectory.FullName}, add image files, and run the program again."
+                        printfn "Press any key to exit..."
+                        Console.ReadKey() |> ignore
+                        1
+
+                    else
+                        let files =
+                            Directory.GetFiles(inputDirectory.FullName, "*.*")
+                            |> Array.filter isSupportedFileFormat
+
+                        if Array.length files = 0 then
+                            printfn $"No image files were found."
+                            printfn $"Place image files in %s{inputDirectory.FullName} and run the program again."
+                            printfn "Press any key to exit..."
+                            Console.ReadKey() |> ignore
+                            0
+                        else
+                            printfn $"Processing {Array.length files} image(s)...\n"
+
+                            use faceDetector: FaceDetector = new FaceDetector()
+
+                            files
+                            |> Array.iter (fun (filePath: string) ->
+                                blurFaces faceDetector outputDirectory.FullName filePath verbose)
+
+                            printfn "Press any key to exit..."
+                            Console.ReadKey() |> ignore
+
+                            0
                 else
-                    Environment.CurrentDirectory
+                    let args' = pathsArgument |> List.filter isSupportedFileFormat
 
-            let outputDirectory = Path.Join [| workingDirectory; "output" |] |> DirectoryInfo
-
-            if Array.length args = 0 then
-
-                let inputDirectory = Path.Join [| workingDirectory; @"input" |] |> DirectoryInfo
-
-                if not inputDirectory.Exists then
-                    printfn $"Error: The directory %s{inputDirectory.FullName} does not exist."
-                    printfn $"Create %s{inputDirectory.FullName}, add image files, and run the program again."
-                    printfn "Press any key to exit..."
-                    Console.ReadKey() |> ignore
-                    1
-
-                else
-                    let files = Directory.GetFiles(inputDirectory.FullName, "*.*")
-
-                    if Array.length files = 0 then
+                    if List.length args' = 0 then
                         printfn $"No image files were found."
-                        printfn $"Place image files in %s{inputDirectory.FullName} and run the program again."
+                        printfn $"Supprted file formats are BMP, GIF, EXIF, JPG, PNG and TIFF."
                         printfn "Press any key to exit..."
                         Console.ReadKey() |> ignore
                         0
                     else
-                        printfn $"Processing {Array.length files} image(s)...\n"
+                        printfn $"Processing {List.length args'} image(s)...\n"
 
                         use faceDetector: FaceDetector = new FaceDetector()
 
-                        files
-                        |> Array.iter (fun (filePath: string) ->
-                            blurFaces faceDetector outputDirectory.FullName filePath)
+                        args'
+                        |> List.iter (fun (filePath: string) ->
+                            blurFaces faceDetector outputDirectory.FullName filePath verbose)
 
                         printfn "Press any key to exit..."
                         Console.ReadKey() |> ignore
 
                         0
-            else
-                printfn $"Processing {Array.length args} image(s)...\n"
-
-                use faceDetector: FaceDetector = new FaceDetector()
-
-                args
-                |> Array.iter (fun (filePath: string) -> blurFaces faceDetector outputDirectory.FullName filePath)
-
-                printfn "Press any key to exit..."
-                Console.ReadKey() |> ignore
-
-                0
