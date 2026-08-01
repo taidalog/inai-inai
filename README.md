@@ -15,6 +15,7 @@ Written in F#.
 
 - Windows (x64)
 - .NET 8 or later
+- git (just for `git clone`)
 
 ## Building
 
@@ -24,6 +25,8 @@ Clone the repository:
 git clone git@github.com:taidalog/inai-inai.git
 cd inai-inai
 ```
+
+... or you can just download ZIP from https://github.com/taidalog/inai-inai
 
 Then build the project:
 
@@ -45,8 +48,6 @@ The options above enable you to move the EXE file anywhere on your computer.
 
 ## Usage
 
-There are four ways to run the application.
-
 ### Usage 1
 
 1. Create an `input` directory in the current directory.
@@ -61,19 +62,15 @@ Output images are saved in the `output` directory in the current directory.
 
 ### Usage 2
 
-1. Create an `input` directory next to `inai-inai.exe`.
-1. Place image files in the `input` directory.
-1. Run the application by double-clicking `inai-inai.exe`.
+1. Run the application DLL using the command below. The path to the DLL and image files depends on your current directory. Multiple files can be accepted:
 
-Output images are saved in the `output` directory next to `inai-inai.exe`.
+   ```
+   dotnet .\src\bin\Debug\net10.0\win-x64\inai-inai.dll your\image.jpg another\input\image.jpg
+   ```
+
+Output images are saved in the `output` directory in the current directory.
 
 ### Usage 3
-
-1. Drag and drop image files onto `inai-inai.exe`.
-
-Output images are saved in the `output` directory next to `inai-inai.exe`.
-
-### Usage 4
 
 1. Create an `input` directory in the current directory.
 1. Place image files in the `input` directory.
@@ -84,6 +81,39 @@ Output images are saved in the `output` directory next to `inai-inai.exe`.
    ```
 
 Output images are saved in the `output` directory in the current directory.
+
+### Usage 4
+
+1. Run the published executable using the command below. The path to the EXE and image files depends on your current directory. Multiple files can be accepted:
+
+   ```
+   .\inai-inai.exe your\image.jpg another\input\image.jpg
+   ```
+
+Output images are saved in the `output` directory in the current directory.
+
+### Usage 5
+
+1. Create an `input` directory next to `inai-inai.exe`.
+1. Place image files in the `input` directory.
+1. Run the published executable by double-clicking.
+
+Output images are saved in the `output` directory next to `inai-inai.exe`.
+
+### Usage 6
+
+1. Drag and drop image files onto the published executable.
+
+Output images are saved in the `output` directory next to `inai-inai.exe`.
+
+## Options
+
+| Option                                      | Description                  |
+| ------------------------------------------- | ---------------------------- |
+| `-i\|--input-directory <INPUT_DIRECTORY>`   | specify an input directory.  |
+| `-o\|--output-directory <OUTPUT_DIRECTORY>` | specify an output directory. |
+| `-vb\|--Verbose`                            | enable verbose logging.      |
+| `-v\|--Version`                             | display version.             |
 
 ## Known Issues
 
@@ -104,15 +134,23 @@ This product includes the following third-party libraries:
 **Apache License 2.0:**
 
 - OpenCvSharp5
+- OpenCvSharp5.GdipExtensions
+- OpenCvSharp5.runtime.win
+- OpenCvSharp5.Windows
 
 **MIT License:**
 
+- Argu
 - FaceONNX
 - FSharp.Core
 - Microsoft.ML.OnnxRuntime.Managed
-- UMapx
 - Microsoft.Win32.SystemEvents
+- System.CodeDom
+- System.Configuration.ConfigurationManager
 - System.Drawing.Common
+- System.Management
+- System.Security.Cryptography.ProtectedData
+- UMapx
 
 For a complete list of dependencies and their licenses, see [licenses.md](./licenses.md) and [NOTICE](./NOTICE).
 
