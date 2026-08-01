@@ -43,12 +43,21 @@ module Main =
 
         loop directoryPath fileBaseName fileExtension 0
 
+    let getImageOrientationProperty (bitmap: Bitmap) : Imaging.PropertyItem option =
+        let orientationPropertyId = 0x0112
+
+        if Array.contains orientationPropertyId bitmap.PropertyIdList then
+            Some(bitmap.GetPropertyItem orientationPropertyId)
+        else
+            None
+
     let blurFaces (faceDetector: FaceDetector) (outputDirectoryPath: string) (file: string) : unit =
         printfn $"Detecting faces in:\t%s{file}"
 
         let t0 = DateTime.Now
 
         use bitmap: Bitmap = new Bitmap(file)
+        let orientation: Imaging.PropertyItem option = getImageOrientationProperty bitmap
 
         let faces: FaceDetectionResult array = faceDetector.Forward bitmap
         printfn $"Detected face(s):\t{Array.length faces} face(s), %f{(DateTime.Now - t0).TotalSeconds} seconds"
@@ -124,8 +133,14 @@ module Main =
         if not outputDirectory.Exists then
             outputDirectory.Create()
 
+        use dstBitmap: Bitmap = new Bitmap(file)
+        mat.ToBitmap dstBitmap
+
+        orientation |> Option.iter (fun x -> dstBitmap.SetPropertyItem x)
+
         let outputPath = uniqueFileName outputDirectory.FullName fileinfo.Name
-        Cv2.ImWrite(outputPath, mat) |> ignore
+        dstBitmap.Save outputPath
+        // Cv2.ImWrite(outputPath, mat) |> ignore
 
         printfn $"Saved image:\t\t%s{outputPath}, %f{(DateTime.Now - t2).TotalSeconds} seconds\n"
 
