@@ -51,6 +51,14 @@ module Main =
         else
             None
 
+    let isFaceWithinBitmap (width: int) (height: int) (x: FaceDetectionResult) : bool =
+        let rect = x.Rectangle
+
+        rect.X >= 0
+        && rect.Y >= 0
+        && rect.X + rect.Width <= width
+        && rect.Y + rect.Height <= height
+
     let blurFaces (faceDetector: FaceDetector) (outputDirectoryPath: string) (file: string) : unit =
         printfn $"Detecting faces in:\t%s{file}"
 
@@ -75,6 +83,7 @@ module Main =
         // Cv2.DestroyAllWindows()
 
         faces
+        |> Array.filter (fun (x: FaceDetectionResult) -> isFaceWithinBitmap bitmap.Width bitmap.Height x)
         |> Array.iter (fun (x: FaceDetectionResult) ->
             let rect = x.Rectangle
             // printfn "Face rectangle:\t\t%A" rect
