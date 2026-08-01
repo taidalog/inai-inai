@@ -59,6 +59,13 @@ module Main =
         && rect.X + rect.Width <= width
         && rect.Y + rect.Height <= height
 
+    let isSupportedFileFormat (x: string) : bool =
+        let extensionName: string = Path.GetExtension x
+
+        List.contains
+            (extensionName.ToUpper())
+            [ ".BMP"; ".GIF"; ".EXIF"; ".JPG"; ".JPEG"; ".JPE"; ".PNG"; ".TIFF"; ".TIF" ]
+
     let blurFaces (faceDetector: FaceDetector) (outputDirectoryPath: string) (file: string) : unit =
         printfn $"Detecting faces in:\t%s{file}"
 
@@ -190,7 +197,9 @@ module Main =
                     1
 
                 else
-                    let files = Directory.GetFiles(inputDirectory.FullName, "*.*")
+                    let files =
+                        Directory.GetFiles(inputDirectory.FullName, "*.*")
+                        |> Array.filter isSupportedFileFormat
 
                     if Array.length files = 0 then
                         printfn $"No image files were found."
@@ -212,14 +221,23 @@ module Main =
 
                         0
             else
-                printfn $"Processing {Array.length args} image(s)...\n"
+                let args' = args |> Array.filter isSupportedFileFormat
 
-                use faceDetector: FaceDetector = new FaceDetector()
+                if Array.length args' = 0 then
+                    printfn $"No image files were found."
+                    printfn $"Supprted file formats are BMP, GIF, EXIF, JPG, PNG and TIFF."
+                    printfn "Press any key to exit..."
+                    Console.ReadKey() |> ignore
+                    0
+                else
+                    printfn $"Processing {Array.length args'} image(s)...\n"
 
-                args
-                |> Array.iter (fun (filePath: string) -> blurFaces faceDetector outputDirectory.FullName filePath)
+                    use faceDetector: FaceDetector = new FaceDetector()
 
-                printfn "Press any key to exit..."
-                Console.ReadKey() |> ignore
+                    args'
+                    |> Array.iter (fun (filePath: string) -> blurFaces faceDetector outputDirectory.FullName filePath)
 
-                0
+                    printfn "Press any key to exit..."
+                    Console.ReadKey() |> ignore
+
+                    0
