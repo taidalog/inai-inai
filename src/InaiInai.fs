@@ -79,7 +79,9 @@ module Main =
             let rect = x.Rectangle
             // printfn "Face rectangle:\t\t%A" rect
 
-            use mask: Mat = new Mat(rect.Height, rect.Width, MatType.CV_8UC3, Scalar.Black)
+            // use mask: Mat = new Mat(rect.Height, rect.Width, MatType.CV_8UC3, Scalar.Black)
+            // Caused an exception with `Cv2.CopyTo`, so replaced `MatType.CV_8UC3` with `MatType.CV_8U`.
+            use mask: Mat = new Mat(rect.Height, rect.Width, MatType.CV_8U, Scalar.Black)
             let center = new Point(rect.Width / 2, rect.Height / 2)
             let axes = new Size(rect.Width / 2, rect.Height / 2)
             // printfn "Mask center:\t\t%A" center
