@@ -38,16 +38,22 @@ module Image =
         else
             None
 
-    let isFaceWithinBitmap (width: int) (height: int) (x: FaceDetectionResult) : bool =
-        let rect = x.Rectangle
-
-        rect.X >= 0
-        && rect.Y >= 0
-        && rect.X + rect.Width <= width
-        && rect.Y + rect.Height <= height
-
     let gaussianBlurCircularEdge (img: Mat) (edgeBlurKsize: int) (faceBlurKsize: int) : Mat =
-        let size = img.Size()
+        // Ensure we work on a 3-channel BGR image. PNGs may have alpha (4 channels),
+        // which causes channel-count mismatches when multiplying with a 3-channel mask.
+        let hasAlpha = img.Channels() = 4
+
+        use src =
+            if hasAlpha then
+                let tmp = new Mat()
+                Cv2.CvtColor(img, tmp, ColorConversionCodes.BGRA2BGR)
+                tmp
+            else
+                let tmp = new Mat()
+                img.CopyTo tmp
+                tmp
+
+        let size = src.Size()
         let w, h = size.Width, size.Height
 
         use mask: Mat = new Mat(size, MatType.CV_32FC1, Scalar.All 0.0)
@@ -62,11 +68,11 @@ module Image =
         Cv2.Merge(ReadOnlySpan<Mat> [| mask; mask; mask |], mask3Ch)
 
         use blurredImg: Mat = new Mat()
-        Cv2.GaussianBlur(img, blurredImg, Size(faceBlurKsize, faceBlurKsize), 0.0)
+        Cv2.GaussianBlur(src, blurredImg, Size(faceBlurKsize, faceBlurKsize), 0.0)
 
         use imgFloat: Mat = new Mat()
         use blurFloat: Mat = new Mat()
-        img.ConvertTo(imgFloat, MatType.CV_32FC3)
+        src.ConvertTo(imgFloat, MatType.CV_32FC3)
         blurredImg.ConvertTo(blurFloat, MatType.CV_32FC3)
 
         use invMask: Mat = new Mat(size, MatType.CV_32FC3, Scalar.All 1.0)
@@ -81,10 +87,18 @@ module Image =
         use outputFloat: Mat = new Mat()
         Cv2.Add(centerPart, edgePart, outputFloat)
 
-        let output: Mat = new Mat()
-        outputFloat.ConvertTo(output, MatType.CV_8UC3)
+        use output3Ch: Mat = new Mat()
+        outputFloat.ConvertTo(output3Ch, MatType.CV_8UC3)
 
-        output
+        // Restore alpha channel if input had it (for PNG compatibility)
+        if hasAlpha then
+            let output4Ch = new Mat()
+            Cv2.CvtColor(output3Ch, output4Ch, ColorConversionCodes.BGR2BGRA)
+            output4Ch
+        else
+            let output = new Mat()
+            output3Ch.CopyTo output
+            output
 
     let blurFaces (faceDetector: FaceDetector) (outputDirectoryPath: string) (file: string) (verbose: bool) : unit =
         printfn $"Detecting faces in:\t%s{file}"
@@ -102,6 +116,8 @@ module Image =
         use mat: Mat = bitmap.ToMat()
         printfn "Image dimensions:\t%d x %d pixels" mat.Width mat.Height
 
+        let matRect: Rectangle = Rectangle(0, 0, mat.Width, mat.Height)
+
         let fileinfo = FileInfo file
         printfn $"Image size:\t\t{float fileinfo.Length / 1024. / 1024.:F2} MB"
 
@@ -110,16 +126,22 @@ module Image =
         // Cv2.DestroyAllWindows()
 
         faces
-        |> Array.filter (isFaceWithinBitmap bitmap.Width bitmap.Height)
+        |> Array.filter (fun (x: FaceDetectionResult) -> matRect.Contains x.Rectangle)
         |> Array.iter (fun (x: FaceDetectionResult) ->
             let rect: System.Drawing.Rectangle = x.Rectangle
 
             if verbose then
                 printfn "Face rectangle:\t\t%A" rect
 
-            let k: int = min rect.Width rect.Height / 14 |> toOddNumber |> max 1
+            let k = min rect.Width rect.Height / 14 |> toOddNumber |> max 1
 
-            let rect': System.Drawing.Rectangle = Rectangle.Inflate(rect, k, k)
+            let inflateAmount: int =
+                let smallest = smallestGap matRect rect |> max 0
+                if smallest > k then k else smallest
+
+            let rect': System.Drawing.Rectangle =
+                Rectangle.Inflate(rect, inflateAmount, inflateAmount)
+
             use facialArea: Mat = mat.Item(rect'.Top, rect'.Bottom, rect'.Left, rect'.Right)
             use facialAreaBlurred: Mat = gaussianBlurCircularEdge facialArea k (k * 10 + 1)
             mat.Item(rect'.Top, rect'.Bottom, rect'.Left, rect'.Right) <- facialAreaBlurred
