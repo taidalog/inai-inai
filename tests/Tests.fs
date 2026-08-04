@@ -18,7 +18,7 @@ module InaiInai.Tests
 
 open System.IO
 open Xunit
-open InaiInai.Main
+open InaiInai.Utility
 
 [<Fact>]
 let ``uniqueFileName 1`` () =

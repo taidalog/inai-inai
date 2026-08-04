@@ -484,3 +484,6 @@ $RECYCLE.BIN/
 # Input and output directories
 input/
 output/
+
+# Visual Studio Code settings
+.vscode/launch.json

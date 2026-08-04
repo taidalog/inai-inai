@@ -6,7 +6,7 @@
     <AssemblyName>inai-inai</AssemblyName>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
-    <Version>0.3.0</Version>
+    <Version>0.4.0</Version>
     <Authors>taidalog</Authors>
     <Description>A privacy tool that blurs faces in images.</Description>
     <Copyright>Copyright 2026 taidalog</Copyright>
@@ -15,9 +15,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Arguments.fs" />
-    <Compile Include="Process.fs" />
     <Compile Include="Utility.fs" />
+    <Compile Include="Arguments.fs" />
+    <Compile Include="Image.fs" />
+    <Compile Include="Process.fs" />
     <Compile Include="InaiInai.fs" />
   </ItemGroup>
 

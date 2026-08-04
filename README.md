@@ -10,6 +10,7 @@ Written in F#.
 
 - Detects faces in images and blurs them.
 - Works locally, doesn't upload your images.
+- Adjusts blur strength according to the size of a face in a image.
 
 ## Requirements
 
