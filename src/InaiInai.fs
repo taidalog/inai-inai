@@ -23,6 +23,7 @@ open System.Reflection
 open FaceONNX
 open Argu
 open Utility
+open Image
 
 module Main =
     [<EntryPoint>]

@@ -15,9 +15,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Arguments.fs" />
-    <Compile Include="Process.fs" />
     <Compile Include="Utility.fs" />
+    <Compile Include="Arguments.fs" />
+    <Compile Include="Image.fs" />
+    <Compile Include="Process.fs" />
     <Compile Include="InaiInai.fs" />
   </ItemGroup>
 
