@@ -52,16 +52,6 @@ module Main =
         else
             printfn "inai-inai version %s\n" versionString
 
-            let pathsArgument: string list = results.GetResult(Paths, defaultValue = [])
-
-            let inputDirectoryArgument =
-                results.GetResult(Input_Directory, defaultValue = "input")
-
-            let outputDirectoryArgument =
-                results.GetResult(Output_Directory, defaultValue = "output")
-
-            let verbose = results.Contains Verbose
-
             let pid: int =
                 use p = Process.GetCurrentProcess()
                 p.Id
@@ -71,6 +61,16 @@ module Main =
                 printfn "Error: Parent PID not found."
                 2
             | Some ppid ->
+                let paths: string list = results.GetResult(Paths, defaultValue = [])
+
+                let inputDirectory: string =
+                    results.GetResult(Input_Directory, defaultValue = "input")
+
+                let outputDirectory: string =
+                    results.GetResult(Output_Directory, defaultValue = "output")
+
+                let verbose = results.Contains Verbose
+
                 let isdd = Utility.isDnD ppid (Array.length args)
 
                 let workingDirectory =
@@ -79,62 +79,40 @@ module Main =
                     else
                         Environment.CurrentDirectory
 
-                let outputDirectory =
-                    Path.Join [| workingDirectory; outputDirectoryArgument |] |> DirectoryInfo
+                let outputDirectoryInfo =
+                    Path.Join [| workingDirectory; outputDirectory |] |> DirectoryInfo
 
-                if List.length pathsArgument = 0 then
+                let inputDirectoryInfo =
+                    Path.Join [| workingDirectory; inputDirectory |] |> DirectoryInfo
 
-                    let inputDirectory =
-                        Path.Join [| workingDirectory; inputDirectoryArgument |] |> DirectoryInfo
-
-                    if not inputDirectory.Exists then
-                        printfn $"Error: The directory %s{inputDirectory.FullName} does not exist."
-                        printfn $"Create %s{inputDirectory.FullName}, add image files, and run the program again."
-                        printfn "Press any key to exit..."
-                        Console.ReadKey() |> ignore
-                        1
-
-                    else
-                        let files =
-                            Directory.GetFiles(inputDirectory.FullName, "*.*")
-                            |> Array.filter isSupportedFileFormat
-
-                        if Array.length files = 0 then
-                            printfn $"No image files were found."
-                            printfn $"Place image files in %s{inputDirectory.FullName} and run the program again."
-                            printfn "Press any key to exit..."
-                            Console.ReadKey() |> ignore
-                            0
-                        else
-                            printfn $"Processing {Array.length files} image(s)...\n"
-
-                            use faceDetector: FaceDetector = new FaceDetector()
-
-                            files
-                            |> Array.iter (fun (filePath: string) ->
-                                blurFaces faceDetector outputDirectory.FullName filePath verbose)
-
-                            printfn "Press any key to exit..."
-                            Console.ReadKey() |> ignore
-
-                            0
+                if not inputDirectoryInfo.Exists then
+                    printfn $"Error: The directory %s{inputDirectoryInfo.FullName} does not exist."
+                    printfn $"Create %s{inputDirectoryInfo.FullName}, add image files, and run the program again."
+                    printfn "Press any key to exit..."
+                    Console.ReadKey() |> ignore
+                    1
                 else
-                    let args' = pathsArgument |> List.filter isSupportedFileFormat
+                    let files: string array =
+                        if List.length paths > 0 then
+                            paths |> List.toArray
+                        else
+                            Directory.GetFiles(inputDirectoryInfo.FullName, "*.*")
+                        |> Array.filter isSupportedFileFormat
 
-                    if List.length args' = 0 then
+                    if Array.length files = 0 then
                         printfn $"No image files were found."
-                        printfn $"Supprted file formats are BMP, GIF, EXIF, JPG, PNG and TIFF."
+                        printfn $"Place image files in %s{inputDirectoryInfo.FullName} and run the program again."
                         printfn "Press any key to exit..."
                         Console.ReadKey() |> ignore
                         0
                     else
-                        printfn $"Processing {List.length args'} image(s)...\n"
+                        printfn $"Processing {Array.length files} image(s)...\n"
 
                         use faceDetector: FaceDetector = new FaceDetector()
 
-                        args'
-                        |> List.iter (fun (filePath: string) ->
-                            blurFaces faceDetector outputDirectory.FullName filePath verbose)
+                        files
+                        |> Array.iter (fun (filePath: string) ->
+                            blurFaces faceDetector outputDirectoryInfo.FullName filePath verbose)
 
                         printfn "Press any key to exit..."
                         Console.ReadKey() |> ignore
