@@ -71,10 +71,10 @@ module Main =
 
                 let verbose = results.Contains Verbose
 
-                let isdd = Utility.isDnD ppid (Array.length args)
+                let isDnD = Utility.isDragAndDropped ppid (Array.length args)
 
                 let workingDirectory =
-                    if isdd then
+                    if isDnD then
                         AppContext.BaseDirectory
                     else
                         Environment.CurrentDirectory

@@ -20,9 +20,9 @@ open System.IO
 open System.Diagnostics
 
 module Utility =
-    let isDnD (ppid: int) (argsCount: int) : bool =
-        use pp = Process.GetProcessById ppid
-        let filename = (FileInfo pp.MainModule.FileName).Name
+    let isDragAndDropped (ppid: int) (argsCount: int) : bool =
+        use parentProcces = Process.GetProcessById ppid
+        let filename = (FileInfo parentProcces.MainModule.FileName).Name
         List.contains (filename.ToLowerInvariant()) [ "explorer.exe" ] && argsCount > 0
 
     let uniqueFileName (directoryPath: string) (fileName: string) : string =

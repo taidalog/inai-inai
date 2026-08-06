@@ -100,12 +100,12 @@ module Image =
             output3Ch.CopyTo output
             output
 
-    let blurFaces (faceDetector: FaceDetector) (outputDirectoryPath: string) (file: string) (verbose: bool) : unit =
-        printfn $"Detecting faces in:\t%s{file}"
+    let blurFaces (faceDetector: FaceDetector) (outputDirectoryPath: string) (filename: string) (verbose: bool) : unit =
+        printfn $"Detecting faces in:\t%s{filename}"
 
         let t0 = DateTime.Now
 
-        use bitmap: Bitmap = new Bitmap(file)
+        use bitmap: Bitmap = new Bitmap(filename)
         let orientation: Imaging.PropertyItem option = getImageOrientationProperty bitmap
 
         let faces: FaceDetectionResult array = faceDetector.Forward bitmap
@@ -118,7 +118,7 @@ module Image =
 
         let matRect: Rectangle = Rectangle(0, 0, mat.Width, mat.Height)
 
-        let fileinfo = FileInfo file
+        let fileinfo = FileInfo filename
         printfn $"Image size:\t\t{float fileinfo.Length / 1024. / 1024.:F2} MB"
 
         // Cv2.ImShow("Original Image", mat)
@@ -160,7 +160,7 @@ module Image =
         if not outputDirectory.Exists then
             outputDirectory.Create()
 
-        use dstBitmap: Bitmap = new Bitmap(file)
+        use dstBitmap: Bitmap = new Bitmap(filename)
         mat.ToBitmap dstBitmap
 
         orientation |> Option.iter (fun x -> dstBitmap.SetPropertyItem x)
