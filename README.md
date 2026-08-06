@@ -10,7 +10,7 @@ Written in F#.
 
 - Detects faces in images and blurs them.
 - Works locally, doesn't upload your images.
-- Adjusts blur strength according to the size of a face in a image.
+- Adjusts blur strength according to the size of a face in an image.
 
 ## Requirements
 
@@ -42,10 +42,10 @@ dotnet build
 Package the project with the following options:
 
 ```
-dotnet publish -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=embedded
+dotnet publish
 ```
 
-The options above enable you to move the EXE file anywhere on your computer.
+The resulting EXE file can be moved anywhere on your computer.
 
 ## Usage
 
@@ -63,7 +63,7 @@ Output images are saved in the `output` directory in the current directory.
 
 ### Usage 2
 
-1. Run the application DLL using the command below. The path to the DLL and image files depends on your current directory. Multiple files can be accepted:
+1. Run the application DLL using the command below. The path to the DLL and image files depend on your current directory. Multiple files can be accepted:
 
    ```
    dotnet .\src\bin\Debug\net10.0\win-x64\inai-inai.dll your\image.jpg another\input\image.jpg
@@ -85,7 +85,7 @@ Output images are saved in the `output` directory in the current directory.
 
 ### Usage 4
 
-1. Run the published executable using the command below. The path to the EXE and image files depends on your current directory. Multiple files can be accepted:
+1. Run the published executable using the command below. The path to the EXE and image files depend on your current directory. Multiple files can be accepted:
 
    ```
    .\inai-inai.exe your\image.jpg another\input\image.jpg
@@ -97,7 +97,7 @@ Output images are saved in the `output` directory in the current directory.
 
 1. Create an `input` directory next to `inai-inai.exe`.
 1. Place image files in the `input` directory.
-1. Run the published executable by double-clicking.
+1. Run the published executable by double-clicking `inai-inai.exe`.
 
 Output images are saved in the `output` directory next to `inai-inai.exe`.
 
@@ -111,10 +111,10 @@ Output images are saved in the `output` directory next to `inai-inai.exe`.
 
 | Option                                      | Description                  |
 | ------------------------------------------- | ---------------------------- |
-| `-i\|--input-directory <INPUT_DIRECTORY>`   | specify an input directory.  |
-| `-o\|--output-directory <OUTPUT_DIRECTORY>` | specify an output directory. |
-| `-vb\|--Verbose`                            | enable verbose logging.      |
-| `-v\|--Version`                             | display version.             |
+| `-i\|--input-directory <INPUT_DIRECTORY>`   | Specify an input directory.  |
+| `-o\|--output-directory <OUTPUT_DIRECTORY>` | Specify an output directory. |
+| `-vb\|--Verbose`                            | Enable verbose logging.      |
+| `-v\|--Version`                             | Display version.             |
 
 ## Known Issues
 
