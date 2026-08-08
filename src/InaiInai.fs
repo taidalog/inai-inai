@@ -63,12 +63,6 @@ module Main =
             | Some ppid ->
                 let paths: string list = results.GetResult(Paths, defaultValue = [])
 
-                let inputDirectory: string =
-                    results.GetResult(Input_Directory, defaultValue = "input")
-
-                let outputDirectory: string =
-                    results.GetResult(Output_Directory, defaultValue = "output")
-
                 let verbose = results.Contains Verbose
 
                 let isDnD = Utility.isDragAndDropped ppid (Array.length args)
@@ -80,10 +74,16 @@ module Main =
                         Environment.CurrentDirectory
 
                 let outputDirectoryInfo =
-                    Path.Join [| workingDirectory; outputDirectory |] |> DirectoryInfo
+                    let outputDirectory: string =
+                        results.GetResult(Output_Directory, defaultValue = "output")
+
+                    Path.GetFullPath(outputDirectory, workingDirectory) |> DirectoryInfo
 
                 let inputDirectoryInfo =
-                    Path.Join [| workingDirectory; inputDirectory |] |> DirectoryInfo
+                    let inputDirectory: string =
+                        results.GetResult(Input_Directory, defaultValue = "input")
+
+                    Path.GetFullPath(inputDirectory, workingDirectory) |> DirectoryInfo
 
                 if not inputDirectoryInfo.Exists then
                     printfn $"Error: The directory %s{inputDirectoryInfo.FullName} does not exist."
@@ -98,6 +98,7 @@ module Main =
                         else
                             Directory.GetFiles(inputDirectoryInfo.FullName, "*.*")
                         |> Array.filter isSupportedFileFormat
+                        |> Array.map (fun x -> Path.GetFullPath(x, workingDirectory))
 
                     if Array.length files = 0 then
                         printfn $"No image files were found."
@@ -111,8 +112,8 @@ module Main =
                         use faceDetector: FaceDetector = new FaceDetector()
 
                         files
-                        |> Array.iter (fun (filePath: string) ->
-                            blurFaces faceDetector outputDirectoryInfo.FullName filePath verbose)
+                        |> Array.iter (fun (filename: string) ->
+                            blurFaces faceDetector outputDirectoryInfo.FullName filename verbose)
 
                         printfn "Press any key to exit..."
                         Console.ReadKey() |> ignore
