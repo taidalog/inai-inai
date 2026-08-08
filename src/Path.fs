@@ -16,11 +16,18 @@
 
 namespace InaiInai
 
+open System
 open System.IO
 
 module Path =
-    let tryFileInfo (filename: string) : Result<FileInfo, exn * string> =
+    let tryFileInfo (filename: string) : Result<FileInfo, exn * string * string> =
         try
             FileInfo filename |> Ok
-        with e ->
-            Error(e, filename)
+        with
+        | :? ArgumentNullException as e -> Error(e, "File name is null.", filename)
+        | :? Security.SecurityException as e -> Error(e, "Having no permission to open the file.", filename)
+        | :? ArgumentException as e -> Error(e, "File was not found.", filename)
+        | :? UnauthorizedAccessException as e -> Error(e, "Access to the file is denied.", filename)
+        | :? PathTooLongException as e -> Error(e, "File name is too long.", filename)
+        | :? NotSupportedException as e -> Error(e, "File name contains a colon (:).", filename)
+        | _ as e -> Error(e, "Unexpected error.", filename)

@@ -98,29 +98,35 @@ module Main =
                             paths |> List.toArray
                         else
                             Directory.GetFiles(inputDirectoryInfo.FullName, "*.*")
+
+                    printfn $"Processing {Array.length files} image(s)...\n"
+
+                    use faceDetector: FaceDetector = new FaceDetector()
+
+                    let fileInfos: Result<FileInfo, (exn * string * string)> array =
+                        files
                         |> Array.map (fun x -> Path.GetFullPath(x, workingDirectory))
                         |> Array.filter isSupportedFileFormat
                         |> Array.filter Path.Exists
+                        |> Array.map tryFileInfo
 
-                    if Array.length files = 0 then
-                        printfn $"No image files were found."
-                        printfn $"Place image files in %s{inputDirectoryInfo.FullName} and run the program again."
+                    let processed =
+                        fileInfos
+                        |> Array.map (Result.bind (blurFaces faceDetector verbose outputDirectoryInfo))
+
+                    processed
+                    |> Array.iter (fun (x: Result<(string * float), (exn * string * string)>) ->
+                        match x with
+                        | Ok _ -> ()
+                        | Error(e, msg, filename) -> printfn "Error:\t\t\t%s\n%s\n" filename msg)
+
+                    if Array.length processed > 0 then
                         printfn "Press any key to exit..."
                         Console.ReadKey() |> ignore
                         0
                     else
-                        printfn $"Processing {Array.length files} image(s)...\n"
-
-                        use faceDetector: FaceDetector = new FaceDetector()
-
-                        files
-                        |> Array.map tryFileInfo
-                        |> Array.iter (fun (x: Result<FileInfo, (exn * string)>) ->
-                            match x with
-                            | Ok(fileInfo: FileInfo) -> blurFaces faceDetector outputDirectoryInfo fileInfo verbose
-                            | Error(e, path) -> printfn $"Error: %s{path}\n%s{e.Message}")
-
+                        printfn $"No image files were found."
+                        printfn $"Place image files in %s{inputDirectoryInfo.FullName} and run the program again."
                         printfn "Press any key to exit..."
                         Console.ReadKey() |> ignore
-
                         0
