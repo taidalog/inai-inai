@@ -26,20 +26,19 @@ module Utility =
         List.contains (filename.ToLowerInvariant()) [ "explorer.exe" ] && argsCount > 0
 
     let uniqueFileName (directoryPath: string) (path: string) : string =
-        let directory = DirectoryInfo directoryPath
-        let fileBaseName = Path.GetFileNameWithoutExtension path
-        let fileExtension = Path.GetExtension path
-
-        let rec loop (dir: string) (bas: string) (ext: string) (n: int) : string =
+        let rec loop (dirPath: string) (baseName: string) (extension: string) (n: int) : string =
             let duplicationCount = if n = 0 then "" else $" (%d{n})"
 
             let candidatePath =
-                Path.Join [| directory.FullName; $"%s{bas}%s{duplicationCount}%s{ext}" |]
+                Path.GetFullPath($"%s{baseName}%s{duplicationCount}%s{extension}", dirPath)
 
             if Path.Exists candidatePath |> not then
                 candidatePath
             else
-                loop dir bas ext (n + 1)
+                loop dirPath baseName extension (n + 1)
+
+        let fileBaseName = Path.GetFileNameWithoutExtension path
+        let fileExtension = Path.GetExtension path
 
         loop directoryPath fileBaseName fileExtension 0
 
