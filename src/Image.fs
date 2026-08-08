@@ -25,8 +25,8 @@ open OpenCvSharp.GdipExtensions
 open Utility
 
 module Image =
-    let detectFaces (faceDetector: FaceDetector) (filename: string) : FaceDetectionResult array =
-        use bitmap: Bitmap = new Bitmap(filename)
+    let detectFaces (faceDetector: FaceDetector) (fileInfo: FileInfo) : FaceDetectionResult array =
+        use bitmap: Bitmap = new Bitmap(fileInfo.FullName)
         let faces: FaceDetectionResult array = faceDetector.Forward bitmap
         faces
 
@@ -100,12 +100,17 @@ module Image =
             output3Ch.CopyTo output
             output
 
-    let blurFaces (faceDetector: FaceDetector) (outputDirectoryPath: string) (filename: string) (verbose: bool) : unit =
-        printfn $"Detecting faces in:\t%s{filename}"
+    let blurFaces
+        (faceDetector: FaceDetector)
+        (outputDirectory: DirectoryInfo)
+        (fileInfo: FileInfo)
+        (verbose: bool)
+        : unit =
+        printfn $"Detecting faces in:\t%s{fileInfo.FullName}"
 
         let t0 = DateTime.Now
 
-        use bitmap: Bitmap = new Bitmap(filename)
+        use bitmap: Bitmap = new Bitmap(fileInfo.FullName)
         let orientation: Imaging.PropertyItem option = getImageOrientationProperty bitmap
 
         let faces: FaceDetectionResult array = faceDetector.Forward bitmap
@@ -117,9 +122,7 @@ module Image =
         printfn "Image dimensions:\t%d x %d pixels" mat.Width mat.Height
 
         let matRect: Rectangle = Rectangle(0, 0, mat.Width, mat.Height)
-
-        let fileinfo = FileInfo filename
-        printfn $"Image size:\t\t{float fileinfo.Length / 1024. / 1024.:F2} MB"
+        printfn $"Image size:\t\t{float fileInfo.Length / 1024. / 1024.:F2} MB"
 
         // Cv2.ImShow("Original Image", mat)
         // Cv2.WaitKey 0 |> ignore
@@ -155,17 +158,15 @@ module Image =
 
         let t2 = DateTime.Now
 
-        let outputDirectory = DirectoryInfo outputDirectoryPath
-
         if not outputDirectory.Exists then
             outputDirectory.Create()
 
-        use dstBitmap: Bitmap = new Bitmap(filename)
+        use dstBitmap: Bitmap = new Bitmap(fileInfo.FullName)
         mat.ToBitmap dstBitmap
 
         orientation |> Option.iter (fun x -> dstBitmap.SetPropertyItem x)
 
-        let outputPath = uniqueFileName outputDirectory.FullName fileinfo.Name
+        let outputPath = uniqueFileName outputDirectory fileInfo
         dstBitmap.Save outputPath
         // Cv2.ImWrite(outputPath, mat) |> ignore
 

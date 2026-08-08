@@ -25,7 +25,7 @@ module Utility =
         let filename = (FileInfo parentProcces.MainModule.FileName).Name
         List.contains (filename.ToLowerInvariant()) [ "explorer.exe" ] && argsCount > 0
 
-    let uniqueFileName (directoryPath: string) (path: string) : string =
+    let uniqueFileName (directoryInfo: DirectoryInfo) (fileInfo: FileInfo) : string =
         let rec loop (dirPath: string) (baseName: string) (extension: string) (n: int) : string =
             let duplicationCount = if n = 0 then "" else $" (%d{n})"
 
@@ -37,10 +37,10 @@ module Utility =
             else
                 loop dirPath baseName extension (n + 1)
 
-        let fileBaseName = Path.GetFileNameWithoutExtension path
-        let fileExtension = Path.GetExtension path
+        let fileBaseName = Path.GetFileNameWithoutExtension fileInfo.Name
+        let fileExtension = fileInfo.Extension
 
-        loop directoryPath fileBaseName fileExtension 0
+        loop directoryInfo.FullName fileBaseName fileExtension 0
 
     let isSupportedFileFormat (path: string) : bool =
         let extension: string = Path.GetExtension path

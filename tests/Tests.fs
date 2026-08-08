@@ -21,28 +21,36 @@ open Xunit
 open InaiInai.Utility
 
 [<Fact>]
-let ``uniqueFileName 1`` () =
-    let expected =
+let ``Supposing "no-such-file.na" does't exist in "output"`` () =
+    let expected: string =
         let fileInfo = FileInfo @"output\no-such-file.na"
         fileInfo.FullName
 
-    let actual = uniqueFileName "output" @"no-such-file.na"
+    let actual: string =
+        uniqueFileName (DirectoryInfo "output") (FileInfo @"no-such-file.na")
+
     Assert.Equal(expected, actual)
 
 [<Fact>]
-let ``uniqueFileName 2`` () =
-    let expected =
+let ``Supposing "existing-file-name.jpg" exists in "output"`` () =
+    let expected: string =
         let fileInfo = FileInfo @"output\existing-file-name (1).jpg"
         fileInfo.FullName
 
-    let actual = uniqueFileName "output" @"existing-file-name.jpg"
+    let actual: string =
+        uniqueFileName (DirectoryInfo "output") (FileInfo @"existing-file-name.jpg")
+
     Assert.Equal(expected, actual)
 
 [<Fact>]
-let ``uniqueFileName 3`` () =
-    let expected =
+let ``Supposing "one-and-two-existing.jpg", "one-and-two-existing (1).jpg" and "one-and-two-existing (2).jpg" exist in "output"``
+    ()
+    =
+    let expected: string =
         let fileInfo = FileInfo @"output\one-and-two-existing (3).jpg"
         fileInfo.FullName
 
-    let actual = uniqueFileName "output" @"one-and-two-existing.jpg"
+    let actual: string =
+        uniqueFileName (DirectoryInfo "output") (FileInfo @"one-and-two-existing.jpg")
+
     Assert.Equal(expected, actual)

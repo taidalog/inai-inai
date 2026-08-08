@@ -24,6 +24,7 @@ open FaceONNX
 open Argu
 open Utility
 open Image
+open Path
 
 module Main =
     [<EntryPoint>]
@@ -97,8 +98,9 @@ module Main =
                             paths |> List.toArray
                         else
                             Directory.GetFiles(inputDirectoryInfo.FullName, "*.*")
-                        |> Array.filter isSupportedFileFormat
                         |> Array.map (fun x -> Path.GetFullPath(x, workingDirectory))
+                        |> Array.filter isSupportedFileFormat
+                        |> Array.filter Path.Exists
 
                     if Array.length files = 0 then
                         printfn $"No image files were found."
@@ -112,8 +114,11 @@ module Main =
                         use faceDetector: FaceDetector = new FaceDetector()
 
                         files
-                        |> Array.iter (fun (filename: string) ->
-                            blurFaces faceDetector outputDirectoryInfo.FullName filename verbose)
+                        |> Array.map tryFileInfo
+                        |> Array.iter (fun (x: Result<FileInfo, (exn * string)>) ->
+                            match x with
+                            | Ok(fileInfo: FileInfo) -> blurFaces faceDetector outputDirectoryInfo fileInfo verbose
+                            | Error(e, path) -> printfn $"Error: %s{path}\n%s{e.Message}")
 
                         printfn "Press any key to exit..."
                         Console.ReadKey() |> ignore
