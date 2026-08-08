@@ -25,10 +25,10 @@ module Utility =
         let filename = (FileInfo parentProcces.MainModule.FileName).Name
         List.contains (filename.ToLowerInvariant()) [ "explorer.exe" ] && argsCount > 0
 
-    let uniqueFileName (directoryPath: string) (fileName: string) : string =
+    let uniqueFileName (directoryPath: string) (path: string) : string =
         let directory = DirectoryInfo directoryPath
-        let fileBaseName = Path.GetFileNameWithoutExtension fileName
-        let fileExtension = Path.GetExtension fileName
+        let fileBaseName = Path.GetFileNameWithoutExtension path
+        let fileExtension = Path.GetExtension path
 
         let rec loop (dir: string) (bas: string) (ext: string) (n: int) : string =
             let duplicationCount = if n = 0 then "" else $" (%d{n})"
@@ -43,11 +43,11 @@ module Utility =
 
         loop directoryPath fileBaseName fileExtension 0
 
-    let isSupportedFileFormat (x: string) : bool =
-        let extensionName: string = Path.GetExtension x
+    let isSupportedFileFormat (path: string) : bool =
+        let extension: string = Path.GetExtension path
 
         List.contains
-            (extensionName.ToUpper())
+            (extension.ToUpper())
             [ ".BMP"; ".GIF"; ".EXIF"; ".JPG"; ".JPEG"; ".JPE"; ".PNG"; ".TIFF"; ".TIF" ]
 
     let toOddNumber (n: int) : int = n + if n % 2 = 0 then 1 else 0
