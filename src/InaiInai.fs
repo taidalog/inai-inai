@@ -20,6 +20,7 @@ open System
 open System.IO
 open System.Diagnostics
 open System.Reflection
+open System.Text
 open FaceONNX
 open Argu
 open Utility
@@ -29,6 +30,8 @@ open Path
 module Main =
     [<EntryPoint>]
     let main (args: string array) : int =
+        Console.OutputEncoding <- Encoding.UTF8
+
         let errorHandler =
             ProcessExiter(
                 colorizer =
@@ -59,7 +62,7 @@ module Main =
 
             match Process.getParentPid pid with
             | None ->
-                printfn "Error: Parent PID not found."
+                printfn "%s" Resources.Strings.``Error: Parent PID not found.``
                 2
             | Some ppid ->
                 let paths: string list = results.GetResult(Paths, defaultValue = [])
@@ -87,9 +90,14 @@ module Main =
                     Path.GetFullPath(inputDirectory, workingDirectory) |> DirectoryInfo
 
                 if not inputDirectoryInfo.Exists then
-                    printfn $"Error: The directory %s{inputDirectoryInfo.FullName} does not exist."
-                    printfn $"Create %s{inputDirectoryInfo.FullName}, add image files, and run the program again."
-                    printfn "Press any key to exit..."
+                    printfn "%s" (Resources.Strings.``Error: The directory {0} does not exist.`` inputDirectoryInfo)
+
+                    printfn
+                        "%s"
+                        (Resources.Strings.``Create {0}, add image files, and run the program again.``
+                            inputDirectoryInfo)
+
+                    printfn "%s" Resources.Strings.``Press any key to exit...``
                     Console.ReadKey() |> ignore
                     1
                 else
@@ -99,7 +107,7 @@ module Main =
                         else
                             Directory.GetFiles(inputDirectoryInfo.FullName, "*.*")
 
-                    printfn $"Processing {Array.length files} image(s)...\n"
+                    printfn "%s" (Resources.Strings.``Processing {0} image(s)...\n`` (Array.length files))
 
                     use faceDetector: FaceDetector = new FaceDetector()
 
@@ -121,12 +129,17 @@ module Main =
                         | Error(e, msg, filename) -> printfn "Error:\t\t\t%s\n%s\n" filename msg)
 
                     if Array.length processed > 0 then
-                        printfn "Press any key to exit..."
+                        printfn "%s" Resources.Strings.``Press any key to exit...``
                         Console.ReadKey() |> ignore
                         0
                     else
-                        printfn $"No image files were found."
-                        printfn $"Place image files in %s{inputDirectoryInfo.FullName} and run the program again."
-                        printfn "Press any key to exit..."
+                        printfn "%s" Resources.Strings.``No image files were found.``
+
+                        printfn
+                            "%s"
+                            (Resources.Strings.``Place image files in {0} and run the program again.``
+                                inputDirectoryInfo)
+
+                        printfn "%s" Resources.Strings.``Press any key to exit...``
                         Console.ReadKey() |> ignore
                         0

@@ -107,7 +107,7 @@ module Image =
         (fileInfo: FileInfo)
         : Result<string * float, exn * string * string> =
         try
-            printfn $"Detecting faces in:\t%s{fileInfo.FullName}"
+            printfn "%s" (Resources.Strings.``Detecting faces in:\t{0}`` fileInfo)
 
             if fileInfo.Exists = false then
                 let e = new FileNotFoundException()
@@ -174,7 +174,12 @@ module Image =
                 dstBitmap.Save outputPath
                 // Cv2.ImWrite(outputPath, mat) |> ignore
 
-                printfn $"Saved image:\t\t%s{outputPath}, %f{(DateTime.Now - t2).TotalSeconds} seconds\n"
+                printfn
+                    "%s"
+                    (Resources.Strings.``Saved image:\t\t{0}, {1} seconds\n``
+                        outputPath
+                        (DateTime.Now - t2).TotalSeconds)
+
                 Ok(outputPath, (DateTime.Now - t2).TotalSeconds)
         with
         | :? FileNotFoundException as e ->

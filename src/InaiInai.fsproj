@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <Compile Include="Utility.fs" />
+    <Compile Include="Resources.fs" />
     <Compile Include="Path.fs" />
     <Compile Include="Arguments.fs" />
     <Compile Include="Image.fs" />
