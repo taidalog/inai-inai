@@ -37,7 +37,7 @@ Written in F#.
    dotnet publish
    ```
 
-The resulting `inai-inai.exe` will be output to repository root. The EXE file can be moved anywhere on your computer.
+The resulting `inai-inai.exe` will be output to the repository root. The EXE file can be moved anywhere on your computer.
 
 ## Usage
 
@@ -77,6 +77,26 @@ Output images are saved in the `output` directory in the current directory.
 
 Output images are saved in the `output` directory in the current directory.
 
+### Usage 5
+
+You can pass image files to `inai-inai.exe` with PowerShell. The command below passes all the files in the current directory. The path to the EXE depends on your current directory.
+
+```
+.\inai-inai.exe @(ls -File)
+```
+
+Output images are saved in the `output` directory in the current directory.
+
+### Usage 6
+
+You can pass image files to `inai-inai.exe` with PowerShell. The command below passes the files in the `input` directory whose name starts with "IMG\_". The path to the EXE depends on your current directory.
+
+```
+.\inai-inai.exe @(ls .\input\ -File | ? { $_.Name -match "^IMG_" })
+```
+
+Output images are saved in the `output` directory in the current directory.
+
 ## Options
 
 | Option                                      | Description                  |
@@ -84,7 +104,7 @@ Output images are saved in the `output` directory in the current directory.
 | `-i\|--input-directory <INPUT_DIRECTORY>`   | Specify an input directory.  |
 | `-o\|--output-directory <OUTPUT_DIRECTORY>` | Specify an output directory. |
 | `-vb\|--Verbose`                            | Enable verbose logging.      |
-| `-v\|--Version`                             | Display version.             |
+| `-v\|--Version`                             | Display the version.         |
 
 ## Known Issues
 
