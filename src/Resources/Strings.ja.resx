@@ -27,8 +27,28 @@
     <value>顔を検出中:{1}{1}{0}</value>
   </data>
 
+  <data name="Detected face(s):\t{0} face(s), {1} seconds" xml:space="preserve">
+    <value>顔を検出しました:{2}{0} 件、{1} 秒</value>
+  </data>
+
+  <data name="Image dimensions:\t{0} x {1} pixels" xml:space="preserve">
+    <value>画像の大きさ:{2}{2}{0} x {1} ピクセル</value>
+  </data>
+
+  <data name="Image size:\t\t{0} MB" xml:space="preserve">
+    <value>画像のサイズ:{1}{1}{0} MB</value>
+  </data>
+
+  <data name="Face rectangle:\t\t{0}" xml:space="preserve">
+    <value>顔の領域:{1}{1}{0}</value>
+  </data>
+
+  <data name="Masking time:\t\t{0} seconds" xml:space="preserve">
+    <value>ぼかしをかけました:{1}{0} 秒</value>
+  </data>
+
   <data name="Saved image:\t\t{0}, {1} seconds\n" xml:space="preserve">
-    <value>画像を保存しました:{2}{0}, {1} 秒{3}</value>
+    <value>画像を保存しました:{2}{0}、{1} 秒{3}</value>
   </data>
 
   <data name="Press any key to exit..." xml:space="preserve">
