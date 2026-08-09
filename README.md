@@ -47,7 +47,7 @@ Package the project with the following options:
 dotnet publish
 ```
 
-The resulting EXE file can be moved anywhere on your computer.
+The resulting `inai-inai.exe` will be output to repository root. The EXE file can be moved anywhere on your computer.
 
 ## Usage
 
