@@ -16,9 +16,9 @@ Written in F#.
 
 ## Requirements
 
-- Windows (x64)
-- .NET 8 or later (just for `dotnet publish`)
-- git (just for `git clone`)
+- Windows (64 bits)
+- .NET 10 (for `dotnet publish`)
+- git (for `git clone`)
 
 ## Publishing the application
 
@@ -29,7 +29,7 @@ Written in F#.
    cd inai-inai
    ```
 
-... or you can just download ZIP from https://github.com/taidalog/inai-inai
+... or download ZIP from https://github.com/taidalog/inai-inai
 
 1. Then publish the application:
 

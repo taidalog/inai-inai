@@ -16,8 +16,8 @@ F# で書きました。
 
 ## 動作環境
 
-- Windows (64ビット)
-- .NET 8 以降 (`dotnet publish` のため)
+- Windows (64 ビット)
+- .NET 10 (`dotnet publish` のため)
 - git (`git clone` のため)
 
 ## アプリを発行する
