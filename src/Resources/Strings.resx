@@ -28,7 +28,7 @@
   </data>
 
   <data name="Detected face(s):\t{0} face(s), {1} seconds" xml:space="preserve">
-    <value>Detected face(s):\t{2}{0} face(s), {1} seconds</value>
+    <value>Detected face(s):{2}{0} face(s), {1} seconds</value>
   </data>
 
   <data name="Image dimensions:\t{0} x {1} pixels" xml:space="preserve">
