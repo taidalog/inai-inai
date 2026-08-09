@@ -27,6 +27,26 @@
     <value>Detecting faces in:{1}{0}</value>
   </data>
 
+  <data name="Detected face(s):\t{0} face(s), {1} seconds" xml:space="preserve">
+    <value>Detected face(s):\t{2}{0} face(s), {1} seconds</value>
+  </data>
+
+  <data name="Image dimensions:\t{0} x {1} pixels" xml:space="preserve">
+    <value>Image dimensions:{2}{0} x {1} pixels</value>
+  </data>
+
+  <data name="Image size:\t\t{0} MB" xml:space="preserve">
+    <value>Image size:{1}{1}{0} MB</value>
+  </data>
+
+  <data name="Face rectangle:\t\t{0}" xml:space="preserve">
+    <value>Face rectangle:{1}{1}{0}</value>
+  </data>
+
+  <data name="Masking time:\t\t{0} seconds" xml:space="preserve">
+    <value>Masking time:{1}{1}{0} seconds</value>
+  </data>
+
   <data name="Saved image:\t\t{0}, {1} seconds\n" xml:space="preserve">
     <value>Saved image:{2}{2}{0}, {1} seconds{3}</value>
   </data>

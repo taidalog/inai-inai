@@ -120,15 +120,20 @@ module Image =
                 let orientation: Imaging.PropertyItem option = getImageOrientationProperty bitmap
 
                 let faces: FaceDetectionResult array = faceDetector.Forward bitmap
-                printfn $"Detected face(s):\t{Array.length faces} face(s), %f{(DateTime.Now - t0).TotalSeconds} seconds"
+
+                printfn
+                    "%s"
+                    (Resources.Strings.``Detected face(s):\t{0} face(s), {1} seconds``
+                        (Array.length faces)
+                        (DateTime.Now - t0).TotalSeconds)
 
                 let t1 = DateTime.Now
 
                 use mat: Mat = bitmap.ToMat()
-                printfn "Image dimensions:\t%d x %d pixels" mat.Width mat.Height
+                printfn "%s" (Resources.Strings.``Image dimensions:\t{0} x {1} pixels`` mat.Width mat.Height)
 
                 let matRect: Rectangle = Rectangle(0, 0, mat.Width, mat.Height)
-                printfn $"Image size:\t\t{float fileInfo.Length / 1024. / 1024.:F2} MB"
+                printfn "%s" (Resources.Strings.``Image size:\t\t{0} MB`` $"{float fileInfo.Length / 1024. / 1024.:F2}")
 
                 // Cv2.ImShow("Original Image", mat)
                 // Cv2.WaitKey 0 |> ignore
@@ -140,7 +145,7 @@ module Image =
                     let rect: System.Drawing.Rectangle = x.Rectangle
 
                     if verbose then
-                        printfn "Face rectangle:\t\t%A" rect
+                        printfn "%s" (Resources.Strings.``Face rectangle:\t\t{0}`` rect)
 
                     let k = min rect.Width rect.Height / 14 |> toOddNumber |> max 1
 
@@ -160,7 +165,7 @@ module Image =
                 // Cv2.DestroyAllWindows()
                 )
 
-                printfn $"Masking time:\t\t%f{(DateTime.Now - t1).TotalSeconds} seconds"
+                printfn "%s" (Resources.Strings.``Masking time:\t\t{0} seconds`` (DateTime.Now - t1).TotalSeconds)
 
                 let t2 = DateTime.Now
 

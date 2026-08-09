@@ -55,6 +55,26 @@ module Resources =
         let ``Detecting faces in:\t{0}`` (fileInfo: FileInfo) : string =
             String.Format(resourceManager.GetString @"Detecting faces in:\t{0}", fileInfo.FullName, "\t")
 
+        let ``Detected face(s):\t{0} face(s), {1} seconds`` (n: int) (totalSeconds: float) : string =
+            String.Format(
+                resourceManager.GetString @"Detected face(s):\t{0} face(s), {1} seconds",
+                n,
+                totalSeconds,
+                "\t"
+            )
+
+        let ``Image dimensions:\t{0} x {1} pixels`` (width: int) (height: int) : string =
+            String.Format(resourceManager.GetString @"Image dimensions:\t{0} x {1} pixels", width, height, "\t")
+
+        let ``Image size:\t\t{0} MB`` (lengthMbString: string) : string =
+            String.Format(resourceManager.GetString @"Image size:\t\t{0} MB", lengthMbString, "\t")
+
+        let ``Face rectangle:\t\t{0}`` (rect: System.Drawing.Rectangle) : string =
+            String.Format(resourceManager.GetString @"Face rectangle:\t\t{0}", rect.ToString(), "\t")
+
+        let ``Masking time:\t\t{0} seconds`` (totalSeconds: float) : string =
+            String.Format(resourceManager.GetString @"Masking time:\t\t{0} seconds", totalSeconds, "\t")
+
         let ``Saved image:\t\t{0}, {1} seconds\n`` (outputPath: string) (totalSeconds: float) : string =
             String.Format(
                 resourceManager.GetString @"Saved image:\t\t{0}, {1} seconds\n",
