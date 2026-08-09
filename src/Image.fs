@@ -109,68 +109,73 @@ module Image =
         try
             printfn $"Detecting faces in:\t%s{fileInfo.FullName}"
 
-            let t0 = DateTime.Now
+            if fileInfo.Exists = false then
+                let e = new FileNotFoundException()
+                printfn "Error:\t\t\t%s\n" e.Message
+                Error(e, $"%s{fileInfo.FullName} is not found.", fileInfo.FullName)
+            else
+                let t0 = DateTime.Now
 
-            use bitmap: Bitmap = new Bitmap(fileInfo.FullName)
-            let orientation: Imaging.PropertyItem option = getImageOrientationProperty bitmap
+                use bitmap: Bitmap = new Bitmap(fileInfo.FullName)
+                let orientation: Imaging.PropertyItem option = getImageOrientationProperty bitmap
 
-            let faces: FaceDetectionResult array = faceDetector.Forward bitmap
-            printfn $"Detected face(s):\t{Array.length faces} face(s), %f{(DateTime.Now - t0).TotalSeconds} seconds"
+                let faces: FaceDetectionResult array = faceDetector.Forward bitmap
+                printfn $"Detected face(s):\t{Array.length faces} face(s), %f{(DateTime.Now - t0).TotalSeconds} seconds"
 
-            let t1 = DateTime.Now
+                let t1 = DateTime.Now
 
-            use mat: Mat = bitmap.ToMat()
-            printfn "Image dimensions:\t%d x %d pixels" mat.Width mat.Height
+                use mat: Mat = bitmap.ToMat()
+                printfn "Image dimensions:\t%d x %d pixels" mat.Width mat.Height
 
-            let matRect: Rectangle = Rectangle(0, 0, mat.Width, mat.Height)
-            printfn $"Image size:\t\t{float fileInfo.Length / 1024. / 1024.:F2} MB"
+                let matRect: Rectangle = Rectangle(0, 0, mat.Width, mat.Height)
+                printfn $"Image size:\t\t{float fileInfo.Length / 1024. / 1024.:F2} MB"
 
-            // Cv2.ImShow("Original Image", mat)
-            // Cv2.WaitKey 0 |> ignore
-            // Cv2.DestroyAllWindows()
+                // Cv2.ImShow("Original Image", mat)
+                // Cv2.WaitKey 0 |> ignore
+                // Cv2.DestroyAllWindows()
 
-            faces
-            |> Array.filter (fun (x: FaceDetectionResult) -> matRect.Contains x.Rectangle)
-            |> Array.iter (fun (x: FaceDetectionResult) ->
-                let rect: System.Drawing.Rectangle = x.Rectangle
+                faces
+                |> Array.filter (fun (x: FaceDetectionResult) -> matRect.Contains x.Rectangle)
+                |> Array.iter (fun (x: FaceDetectionResult) ->
+                    let rect: System.Drawing.Rectangle = x.Rectangle
 
-                if verbose then
-                    printfn "Face rectangle:\t\t%A" rect
+                    if verbose then
+                        printfn "Face rectangle:\t\t%A" rect
 
-                let k = min rect.Width rect.Height / 14 |> toOddNumber |> max 1
+                    let k = min rect.Width rect.Height / 14 |> toOddNumber |> max 1
 
-                let inflateAmount: int =
-                    let smallest = smallestGap matRect rect |> max 0
-                    if smallest > k then k else smallest
+                    let inflateAmount: int =
+                        let smallest = smallestGap matRect rect |> max 0
+                        if smallest > k then k else smallest
 
-                let rect': System.Drawing.Rectangle =
-                    Rectangle.Inflate(rect, inflateAmount, inflateAmount)
+                    let rect': System.Drawing.Rectangle =
+                        Rectangle.Inflate(rect, inflateAmount, inflateAmount)
 
-                use facialArea: Mat = mat.Item(rect'.Top, rect'.Bottom, rect'.Left, rect'.Right)
-                use facialAreaBlurred: Mat = gaussianBlurCircularEdge facialArea k (k * 10 + 1)
-                mat.Item(rect'.Top, rect'.Bottom, rect'.Left, rect'.Right) <- facialAreaBlurred
+                    use facialArea: Mat = mat.Item(rect'.Top, rect'.Bottom, rect'.Left, rect'.Right)
+                    use facialAreaBlurred: Mat = gaussianBlurCircularEdge facialArea k (k * 10 + 1)
+                    mat.Item(rect'.Top, rect'.Bottom, rect'.Left, rect'.Right) <- facialAreaBlurred
 
-            // Cv2.ImShow("Result", mat)
-            // Cv2.WaitKey 0 |> ignore
-            // Cv2.DestroyAllWindows()
-            )
+                // Cv2.ImShow("Result", mat)
+                // Cv2.WaitKey 0 |> ignore
+                // Cv2.DestroyAllWindows()
+                )
 
-            printfn $"Masking time:\t\t%f{(DateTime.Now - t1).TotalSeconds} seconds"
+                printfn $"Masking time:\t\t%f{(DateTime.Now - t1).TotalSeconds} seconds"
 
-            let t2 = DateTime.Now
+                let t2 = DateTime.Now
 
-            if not outputDirectory.Exists then
-                outputDirectory.Create()
+                if not outputDirectory.Exists then
+                    outputDirectory.Create()
 
-            use dstBitmap: Bitmap = mat.ToBitmap()
-            orientation |> Option.iter (fun x -> dstBitmap.SetPropertyItem x)
+                use dstBitmap: Bitmap = mat.ToBitmap()
+                orientation |> Option.iter (fun x -> dstBitmap.SetPropertyItem x)
 
-            let outputPath = uniqueFileName outputDirectory fileInfo
-            dstBitmap.Save outputPath
-            // Cv2.ImWrite(outputPath, mat) |> ignore
+                let outputPath = uniqueFileName outputDirectory fileInfo
+                dstBitmap.Save outputPath
+                // Cv2.ImWrite(outputPath, mat) |> ignore
 
-            printfn $"Saved image:\t\t%s{outputPath}, %f{(DateTime.Now - t2).TotalSeconds} seconds\n"
-            Ok(outputPath, (DateTime.Now - t2).TotalSeconds)
+                printfn $"Saved image:\t\t%s{outputPath}, %f{(DateTime.Now - t2).TotalSeconds} seconds\n"
+                Ok(outputPath, (DateTime.Now - t2).TotalSeconds)
         with
         | :? FileNotFoundException as e ->
             printfn "Error:\t\t\t%s\n" e.Message
