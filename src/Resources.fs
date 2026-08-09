@@ -60,7 +60,7 @@ module Resources =
                 resourceManager.GetString @"Saved image:\t\t{0}, {1} seconds\n",
                 outputPath,
                 totalSeconds,
-                "\t\t",
+                "\t",
                 "\n"
             )
 

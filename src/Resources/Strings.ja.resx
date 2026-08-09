@@ -1,37 +1,37 @@
 <root>
   <data name="Error: Parent PID not found." xml:space="preserve">
-    <value>Error: Parent PID not found.</value>
+    <value>Error: 親プロセスの PID が見つかりませんでした。</value>
   </data>
 
   <data name="Error: The directory {0} does not exist." xml:space="preserve">
-    <value>Error: The directory {0} does not exist.</value>
+    <value>Error: {0} フォルダが存在しません。</value>
   </data>
 
   <data name="Create {0}, add image files, and run the program again." xml:space="preserve">
-    <value>Create {0}, add image files, and run the program again.</value>
+    <value>{0} を作成し、画像を追加してからプログラムを再実行してください。</value>
   </data>
 
   <data name="Processing {0} image(s)...\n" xml:space="preserve">
-    <value>Processing {0} image(s)...{1}</value>
+    <value>{0} 枚の画像を処理中...{1}</value>
   </data>
 
   <data name="No image files were found." xml:space="preserve">
-    <value>No image files were found.</value>
+    <value>画像が見つかりませんでした。</value>
   </data>
 
   <data name="Place image files in {0} and run the program again." xml:space="preserve">
-    <value>Place image files in {0} and run the program again.</value>
+    <value>{0} に画像を追加してからプログラムを再実行してください。</value>
   </data>
 
   <data name="Detecting faces in:\t{0}" xml:space="preserve">
-    <value>Detecting faces in:{1}{0}</value>
+    <value>顔を検出中:{1}{1}{0}</value>
   </data>
 
   <data name="Saved image:\t\t{0}, {1} seconds\n" xml:space="preserve">
-    <value>Saved image:{2}{2}{0}, {1} seconds{3}</value>
+    <value>画像を保存しました:{2}{0}, {1} 秒{3}</value>
   </data>
 
   <data name="Press any key to exit..." xml:space="preserve">
-    <value>Press any key to exit...</value>
+    <value>終了するには何かキーを押してください...</value>
   </data>
 </root>
