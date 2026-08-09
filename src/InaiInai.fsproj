@@ -7,11 +7,10 @@
 
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
 
+    <PublishDir>..</PublishDir>
     <PublishSingleFile>true</PublishSingleFile>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <DebugType>embedded</DebugType>
-
-    <PublishDir>..</PublishDir>
 
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <Version>0.4.0</Version>
