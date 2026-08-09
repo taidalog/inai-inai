@@ -162,9 +162,7 @@ module Image =
             if not outputDirectory.Exists then
                 outputDirectory.Create()
 
-            use dstBitmap: Bitmap = new Bitmap(fileInfo.FullName)
-            mat.ToBitmap dstBitmap
-
+            use dstBitmap: Bitmap = mat.ToBitmap()
             orientation |> Option.iter (fun x -> dstBitmap.SetPropertyItem x)
 
             let outputPath = uniqueFileName outputDirectory fileInfo
