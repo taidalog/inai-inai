@@ -6,11 +6,13 @@ The name "inai-inai" comes from "inai inai baa!", the Japanese version of peek-a
 
 Written in F#.
 
+[Japanese README](README.ja.md)
+
 ## Features
 
 - Detects faces in images and blurs them.
 - Works locally, doesn't upload your images.
-- Adjusts blur strength according to the size of a face in an image.
+- Adjusts the blur strength for each face based on its pixel width and height.
 
 ## Requirements
 
