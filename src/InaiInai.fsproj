@@ -13,7 +13,9 @@
     <DebugType>embedded</DebugType>
 
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
-    <Version>0.4.0</Version>
+    <VersionPrefix>1.0.0</VersionPrefix>
+    <VersionSuffix>alpha.1</VersionSuffix>
+
     <Authors>taidalog</Authors>
     <Description>A privacy tool that blurs faces in images.</Description>
     <Copyright>Copyright 2026 taidalog</Copyright>
