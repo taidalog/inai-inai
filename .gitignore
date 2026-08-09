@@ -487,3 +487,9 @@ output/
 
 # Visual Studio Code settings
 .vscode/launch.json
+
+# Custom instructions for GitHub Copilot
+.github/copilot-instructions.md
+
+# Executable files
+*.exe

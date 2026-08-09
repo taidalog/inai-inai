@@ -6,70 +6,54 @@ The name "inai-inai" comes from "inai inai baa!", the Japanese version of peek-a
 
 Written in F#.
 
+[Japanese README](README.ja.md)
+
 ## Features
 
 - Detects faces in images and blurs them.
 - Works locally, doesn't upload your images.
-- Adjusts blur strength according to the size of a face in a image.
+- Adjusts the blur strength for each face based on its pixel width and height.
 
 ## Requirements
 
-- Windows (x64)
-- .NET 8 or later
-- git (just for `git clone`)
+- Windows (64 bits)
+- .NET 10 (for `dotnet publish`)
+- git (for `git clone`)
 
-## Building
+## Publishing the application
 
-Clone the repository:
+1. Clone the repository:
 
-```
-git clone git@github.com:taidalog/inai-inai.git
-cd inai-inai
-```
+   ```
+   git clone git@github.com:taidalog/inai-inai.git
+   cd inai-inai
+   ```
 
-... or you can just download ZIP from https://github.com/taidalog/inai-inai
+... or download ZIP from https://github.com/taidalog/inai-inai
 
-Then build the project:
+1. Then publish the application:
 
-```
-dotnet build
-```
+   ```
+   dotnet publish
+   ```
 
-## Publishing
-
-(Assuming the repository is already cloned and the current directory is `inai-inai`)
-
-Package the project with the following options:
-
-```
-dotnet publish -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=embedded
-```
-
-The options above enable you to move the EXE file anywhere on your computer.
+The resulting `inai-inai.exe` will be output to the repository root. The EXE file can be moved anywhere on your computer.
 
 ## Usage
 
 ### Usage 1
 
-1. Create an `input` directory in the current directory.
+1. Create an `input` directory next to `inai-inai.exe`.
 1. Place image files in the `input` directory.
-1. Run the application DLL using the command below. The path to the DLL depends on your current directory:
+1. Run the published executable by double-clicking `inai-inai.exe`.
 
-   ```
-   dotnet .\src\bin\Debug\net10.0\win-x64\inai-inai.dll
-   ```
-
-Output images are saved in the `output` directory in the current directory.
+Output images are saved in the `output` directory next to `inai-inai.exe`.
 
 ### Usage 2
 
-1. Run the application DLL using the command below. The path to the DLL and image files depends on your current directory. Multiple files can be accepted:
+1. Drag and drop image files onto the published executable.
 
-   ```
-   dotnet .\src\bin\Debug\net10.0\win-x64\inai-inai.dll your\image.jpg another\input\image.jpg
-   ```
-
-Output images are saved in the `output` directory in the current directory.
+Output images are saved in the `output` directory next to `inai-inai.exe`.
 
 ### Usage 3
 
@@ -85,7 +69,7 @@ Output images are saved in the `output` directory in the current directory.
 
 ### Usage 4
 
-1. Run the published executable using the command below. The path to the EXE and image files depends on your current directory. Multiple files can be accepted:
+1. Run the published executable using the command below. The path to the EXE and image files depend on your current directory. Multiple files can be accepted:
 
    ```
    .\inai-inai.exe your\image.jpg another\input\image.jpg
@@ -95,26 +79,32 @@ Output images are saved in the `output` directory in the current directory.
 
 ### Usage 5
 
-1. Create an `input` directory next to `inai-inai.exe`.
-1. Place image files in the `input` directory.
-1. Run the published executable by double-clicking.
+You can pass image files to `inai-inai.exe` with PowerShell. The command below passes all the files in the current directory. The path to the EXE depends on your current directory.
 
-Output images are saved in the `output` directory next to `inai-inai.exe`.
+```
+.\inai-inai.exe @(ls -File)
+```
+
+Output images are saved in the `output` directory in the current directory.
 
 ### Usage 6
 
-1. Drag and drop image files onto the published executable.
+You can pass image files to `inai-inai.exe` with PowerShell. The command below passes the files in the `input` directory whose name starts with "IMG\_". The path to the EXE depends on your current directory.
 
-Output images are saved in the `output` directory next to `inai-inai.exe`.
+```
+.\inai-inai.exe @(ls .\input\ -File | ? { $_.Name -match "^IMG_" })
+```
+
+Output images are saved in the `output` directory in the current directory.
 
 ## Options
 
 | Option                                      | Description                  |
 | ------------------------------------------- | ---------------------------- |
-| `-i\|--input-directory <INPUT_DIRECTORY>`   | specify an input directory.  |
-| `-o\|--output-directory <OUTPUT_DIRECTORY>` | specify an output directory. |
-| `-vb\|--Verbose`                            | enable verbose logging.      |
-| `-v\|--Version`                             | display version.             |
+| `-i\|--input-directory <INPUT_DIRECTORY>`   | Specify an input directory.  |
+| `-o\|--output-directory <OUTPUT_DIRECTORY>` | Specify an output directory. |
+| `-vb\|--Verbose`                            | Enable verbose logging.      |
+| `-v\|--Version`                             | Display the version.         |
 
 ## Known Issues
 

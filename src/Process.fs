@@ -20,8 +20,10 @@ open System.Management
 
 module Process =
     let getParentPid (pid: int) : int option =
-        let query = $"SELECT ParentProcessId FROM Win32_Process WHERE ProcessId = %d{pid}"
-        use searcher = new ManagementObjectSearcher(query)
+        let queryString =
+            $"SELECT ParentProcessId FROM Win32_Process WHERE ProcessId = %d{pid}"
+
+        use searcher = new ManagementObjectSearcher(queryString)
         use results = searcher.Get()
 
         results

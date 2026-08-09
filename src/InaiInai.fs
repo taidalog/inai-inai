@@ -20,14 +20,18 @@ open System
 open System.IO
 open System.Diagnostics
 open System.Reflection
+open System.Text
 open FaceONNX
 open Argu
 open Utility
 open Image
+open Path
 
 module Main =
     [<EntryPoint>]
     let main (args: string array) : int =
+        Console.OutputEncoding <- Encoding.UTF8
+
         let errorHandler =
             ProcessExiter(
                 colorizer =
@@ -52,91 +56,103 @@ module Main =
         else
             printfn "inai-inai version %s\n" versionString
 
-            let pathsArgument: string list = results.GetResult(Paths, defaultValue = [])
-
-            let inputDirectoryArgument =
-                results.GetResult(Input_Directory, defaultValue = "input")
-
-            let outputDirectoryArgument =
-                results.GetResult(Output_Directory, defaultValue = "output")
-
-            let verbose = results.Contains Verbose
-
             let pid: int =
                 use p = Process.GetCurrentProcess()
                 p.Id
 
             match Process.getParentPid pid with
             | None ->
-                printfn "Error: Parent PID not found."
+                printfn "%s" Resources.Strings.``Error: Parent PID not found.``
                 2
             | Some ppid ->
-                let isdd = Utility.isDnD ppid (Array.length args)
+                let paths: string list = results.GetResult(Paths, defaultValue = [])
+
+                let verbose = results.Contains Verbose
+
+                let isDnD = Utility.isDragAndDropped ppid (Array.length args)
 
                 let workingDirectory =
-                    if isdd then
+                    if isDnD then
                         AppContext.BaseDirectory
                     else
                         Environment.CurrentDirectory
 
-                let outputDirectory =
-                    Path.Join [| workingDirectory; outputDirectoryArgument |] |> DirectoryInfo
+                let outputDirectoryInfo =
+                    let outputDirectory: string =
+                        results.GetResult(Output_Directory, defaultValue = "output")
 
-                if List.length pathsArgument = 0 then
+                    Path.GetFullPath(outputDirectory, workingDirectory) |> DirectoryInfo
 
-                    let inputDirectory =
-                        Path.Join [| workingDirectory; inputDirectoryArgument |] |> DirectoryInfo
+                let inputDirectoryInfo =
+                    let inputDirectory: string =
+                        results.GetResult(Input_Directory, defaultValue = "input")
 
-                    if not inputDirectory.Exists then
-                        printfn $"Error: The directory %s{inputDirectory.FullName} does not exist."
-                        printfn $"Create %s{inputDirectory.FullName}, add image files, and run the program again."
-                        printfn "Press any key to exit..."
+                    Path.GetFullPath(inputDirectory, workingDirectory) |> DirectoryInfo
+
+                if not isDnD && List.length paths = 0 && not inputDirectoryInfo.Exists then
+                    printfn "%s" (Resources.Strings.``Error: The directory {0} does not exist.`` inputDirectoryInfo)
+
+                    printfn
+                        "%s"
+                        (Resources.Strings.``Create {0}, add image files, and run the program again.``
+                            inputDirectoryInfo)
+
+                    printfn "%s" Resources.Strings.``Press any key to exit...``
+                    Console.ReadKey() |> ignore
+                    1
+                else
+                    let files: string array =
+                        if List.length paths > 0 then
+                            paths |> List.toArray
+                        else
+                            Directory.GetFiles(inputDirectoryInfo.FullName, "*.*")
+
+                    if Array.length files = 0 && not inputDirectoryInfo.Exists then
+                        printfn "%s" (Resources.Strings.``Error: The directory {0} does not exist.`` inputDirectoryInfo)
+
+                        printfn
+                            "%s"
+                            (Resources.Strings.``Create {0}, add image files, and run the program again.``
+                                inputDirectoryInfo)
+
+                        printfn "%s" Resources.Strings.``Press any key to exit...``
                         Console.ReadKey() |> ignore
                         1
-
                     else
-                        let files =
-                            Directory.GetFiles(inputDirectory.FullName, "*.*")
-                            |> Array.filter isSupportedFileFormat
 
-                        if Array.length files = 0 then
-                            printfn $"No image files were found."
-                            printfn $"Place image files in %s{inputDirectory.FullName} and run the program again."
-                            printfn "Press any key to exit..."
-                            Console.ReadKey() |> ignore
-                            0
-                        else
-                            printfn $"Processing {Array.length files} image(s)...\n"
-
-                            use faceDetector: FaceDetector = new FaceDetector()
-
-                            files
-                            |> Array.iter (fun (filePath: string) ->
-                                blurFaces faceDetector outputDirectory.FullName filePath verbose)
-
-                            printfn "Press any key to exit..."
-                            Console.ReadKey() |> ignore
-
-                            0
-                else
-                    let args' = pathsArgument |> List.filter isSupportedFileFormat
-
-                    if List.length args' = 0 then
-                        printfn $"No image files were found."
-                        printfn $"Supprted file formats are BMP, GIF, EXIF, JPG, PNG and TIFF."
-                        printfn "Press any key to exit..."
-                        Console.ReadKey() |> ignore
-                        0
-                    else
-                        printfn $"Processing {List.length args'} image(s)...\n"
+                        printfn "%s" (Resources.Strings.``Processing {0} image(s)...\n`` (Array.length files))
 
                         use faceDetector: FaceDetector = new FaceDetector()
 
-                        args'
-                        |> List.iter (fun (filePath: string) ->
-                            blurFaces faceDetector outputDirectory.FullName filePath verbose)
+                        let fileInfos: Result<FileInfo, (exn * string * string)> array =
+                            files
+                            |> Array.map (fun x -> Path.GetFullPath(x, workingDirectory))
+                            |> Array.filter isSupportedFileFormat
+                            |> Array.filter Path.Exists
+                            |> Array.map tryFileInfo
 
-                        printfn "Press any key to exit..."
-                        Console.ReadKey() |> ignore
+                        let processed =
+                            fileInfos
+                            |> Array.map (Result.bind (blurFaces faceDetector verbose outputDirectoryInfo))
 
-                        0
+                        processed
+                        |> Array.iter (fun (x: Result<(string * float), (exn * string * string)>) ->
+                            match x with
+                            | Ok _ -> ()
+                            | Error(e, msg, filename) -> printfn "Error:\t\t\t%s\n%s\n" filename msg)
+
+                        if Array.length processed > 0 then
+                            printfn "%s" Resources.Strings.``Press any key to exit...``
+                            Console.ReadKey() |> ignore
+                            0
+                        else
+                            printfn "%s" Resources.Strings.``No image files were found.``
+
+                            printfn
+                                "%s"
+                                (Resources.Strings.``Place image files in {0} and run the program again.``
+                                    inputDirectoryInfo)
+
+                            printfn "%s" Resources.Strings.``Press any key to exit...``
+                            Console.ReadKey() |> ignore
+                            0

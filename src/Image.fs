@@ -25,8 +25,8 @@ open OpenCvSharp.GdipExtensions
 open Utility
 
 module Image =
-    let detectFaces (faceDetector: FaceDetector) (filename: string) : FaceDetectionResult array =
-        use bitmap: Bitmap = new Bitmap(filename)
+    let detectFaces (faceDetector: FaceDetector) (fileInfo: FileInfo) : FaceDetectionResult array =
+        use bitmap: Bitmap = new Bitmap(fileInfo.FullName)
         let faces: FaceDetectionResult array = faceDetector.Forward bitmap
         faces
 
@@ -100,73 +100,96 @@ module Image =
             output3Ch.CopyTo output
             output
 
-    let blurFaces (faceDetector: FaceDetector) (outputDirectoryPath: string) (file: string) (verbose: bool) : unit =
-        printfn $"Detecting faces in:\t%s{file}"
+    let blurFaces
+        (faceDetector: FaceDetector)
+        (verbose: bool)
+        (outputDirectory: DirectoryInfo)
+        (fileInfo: FileInfo)
+        : Result<string * float, exn * string * string> =
+        try
+            printfn "%s" (Resources.Strings.``Detecting faces in:\t{0}`` fileInfo)
 
-        let t0 = DateTime.Now
+            if fileInfo.Exists = false then
+                let e = new FileNotFoundException()
+                printfn "Error:\t\t\t%s\n" e.Message
+                Error(e, $"%s{fileInfo.FullName} is not found.", fileInfo.FullName)
+            else
+                let t0 = DateTime.Now
 
-        use bitmap: Bitmap = new Bitmap(file)
-        let orientation: Imaging.PropertyItem option = getImageOrientationProperty bitmap
+                use bitmap: Bitmap = new Bitmap(fileInfo.FullName)
+                let orientation: Imaging.PropertyItem option = getImageOrientationProperty bitmap
 
-        let faces: FaceDetectionResult array = faceDetector.Forward bitmap
-        printfn $"Detected face(s):\t{Array.length faces} face(s), %f{(DateTime.Now - t0).TotalSeconds} seconds"
+                let faces: FaceDetectionResult array = faceDetector.Forward bitmap
 
-        let t1 = DateTime.Now
+                printfn
+                    "%s"
+                    (Resources.Strings.``Detected face(s):\t{0} face(s), {1} seconds``
+                        (Array.length faces)
+                        (DateTime.Now - t0).TotalSeconds)
 
-        use mat: Mat = bitmap.ToMat()
-        printfn "Image dimensions:\t%d x %d pixels" mat.Width mat.Height
+                let t1 = DateTime.Now
 
-        let matRect: Rectangle = Rectangle(0, 0, mat.Width, mat.Height)
+                use mat: Mat = bitmap.ToMat()
+                printfn "%s" (Resources.Strings.``Image dimensions:\t{0} x {1} pixels`` mat.Width mat.Height)
 
-        let fileinfo = FileInfo file
-        printfn $"Image size:\t\t{float fileinfo.Length / 1024. / 1024.:F2} MB"
+                let matRect: Rectangle = Rectangle(0, 0, mat.Width, mat.Height)
+                printfn "%s" (Resources.Strings.``Image size:\t\t{0} MB`` $"{float fileInfo.Length / 1024. / 1024.:F2}")
 
-        // Cv2.ImShow("Original Image", mat)
-        // Cv2.WaitKey 0 |> ignore
-        // Cv2.DestroyAllWindows()
+                // Cv2.ImShow("Original Image", mat)
+                // Cv2.WaitKey 0 |> ignore
+                // Cv2.DestroyAllWindows()
 
-        faces
-        |> Array.filter (fun (x: FaceDetectionResult) -> matRect.Contains x.Rectangle)
-        |> Array.iter (fun (x: FaceDetectionResult) ->
-            let rect: System.Drawing.Rectangle = x.Rectangle
+                faces
+                |> Array.filter (fun (x: FaceDetectionResult) -> matRect.Contains x.Rectangle)
+                |> Array.iter (fun (x: FaceDetectionResult) ->
+                    let rect: System.Drawing.Rectangle = x.Rectangle
 
-            if verbose then
-                printfn "Face rectangle:\t\t%A" rect
+                    if verbose then
+                        printfn "%s" (Resources.Strings.``Face rectangle:\t\t{0}`` rect)
 
-            let k = min rect.Width rect.Height / 14 |> toOddNumber |> max 1
+                    let k = min rect.Width rect.Height / 14 |> toOddNumber |> max 1
 
-            let inflateAmount: int =
-                let smallest = smallestGap matRect rect |> max 0
-                if smallest > k then k else smallest
+                    let inflateAmount: int =
+                        let smallest = smallestGap matRect rect |> max 0
+                        if smallest > k then k else smallest
 
-            let rect': System.Drawing.Rectangle =
-                Rectangle.Inflate(rect, inflateAmount, inflateAmount)
+                    let rect': System.Drawing.Rectangle =
+                        Rectangle.Inflate(rect, inflateAmount, inflateAmount)
 
-            use facialArea: Mat = mat.Item(rect'.Top, rect'.Bottom, rect'.Left, rect'.Right)
-            use facialAreaBlurred: Mat = gaussianBlurCircularEdge facialArea k (k * 10 + 1)
-            mat.Item(rect'.Top, rect'.Bottom, rect'.Left, rect'.Right) <- facialAreaBlurred
+                    use facialArea: Mat = mat.Item(rect'.Top, rect'.Bottom, rect'.Left, rect'.Right)
+                    use facialAreaBlurred: Mat = gaussianBlurCircularEdge facialArea k (k * 10 + 1)
+                    mat.Item(rect'.Top, rect'.Bottom, rect'.Left, rect'.Right) <- facialAreaBlurred
 
-        // Cv2.ImShow("Result", mat)
-        // Cv2.WaitKey 0 |> ignore
-        // Cv2.DestroyAllWindows()
-        )
+                // Cv2.ImShow("Result", mat)
+                // Cv2.WaitKey 0 |> ignore
+                // Cv2.DestroyAllWindows()
+                )
 
-        printfn $"Masking time:\t\t%f{(DateTime.Now - t1).TotalSeconds} seconds"
+                printfn "%s" (Resources.Strings.``Masking time:\t\t{0} seconds`` (DateTime.Now - t1).TotalSeconds)
 
-        let t2 = DateTime.Now
+                let t2 = DateTime.Now
 
-        let outputDirectory = DirectoryInfo outputDirectoryPath
+                if not outputDirectory.Exists then
+                    outputDirectory.Create()
 
-        if not outputDirectory.Exists then
-            outputDirectory.Create()
+                use dstBitmap: Bitmap = mat.ToBitmap()
+                orientation |> Option.iter (fun x -> dstBitmap.SetPropertyItem x)
 
-        use dstBitmap: Bitmap = new Bitmap(file)
-        mat.ToBitmap dstBitmap
+                let outputPath = uniqueFileName outputDirectory fileInfo
+                dstBitmap.Save outputPath
+                // Cv2.ImWrite(outputPath, mat) |> ignore
 
-        orientation |> Option.iter (fun x -> dstBitmap.SetPropertyItem x)
+                printfn
+                    "%s"
+                    (Resources.Strings.``Saved image:\t\t{0}, {1} seconds\n``
+                        outputPath
+                        (DateTime.Now - t2).TotalSeconds)
 
-        let outputPath = uniqueFileName outputDirectory.FullName fileinfo.Name
-        dstBitmap.Save outputPath
-        // Cv2.ImWrite(outputPath, mat) |> ignore
-
-        printfn $"Saved image:\t\t%s{outputPath}, %f{(DateTime.Now - t2).TotalSeconds} seconds\n"
+                Ok(outputPath, (DateTime.Now - t2).TotalSeconds)
+        with
+        | :? FileNotFoundException as e ->
+            printfn "Error:\t\t\t%s\n" e.Message
+            Error(e, $"%s{e.FileName} is not found.", fileInfo.FullName)
+        | _ as e ->
+            printfn "Error:\t\t\t%s\n" e.Message
+            Error(e, "Unexpected error.", fileInfo.FullName)
