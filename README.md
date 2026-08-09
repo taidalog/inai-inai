@@ -17,35 +17,25 @@ Written in F#.
 ## Requirements
 
 - Windows (x64)
-- .NET 8 or later
+- .NET 8 or later (just for `dotnet publish`)
 - git (just for `git clone`)
 
-## Building
+## Publishing the application
 
-Clone the repository:
+1. Clone the repository:
 
-```
-git clone git@github.com:taidalog/inai-inai.git
-cd inai-inai
-```
+   ```
+   git clone git@github.com:taidalog/inai-inai.git
+   cd inai-inai
+   ```
 
 ... or you can just download ZIP from https://github.com/taidalog/inai-inai
 
-Then build the project:
+1. Then publish the application:
 
-```
-dotnet build
-```
-
-## Publishing
-
-(Assuming the repository is already cloned and the current directory is `inai-inai`)
-
-Package the project with the following options:
-
-```
-dotnet publish
-```
+   ```
+   dotnet publish
+   ```
 
 The resulting `inai-inai.exe` will be output to repository root. The EXE file can be moved anywhere on your computer.
 
@@ -53,25 +43,17 @@ The resulting `inai-inai.exe` will be output to repository root. The EXE file ca
 
 ### Usage 1
 
-1. Create an `input` directory in the current directory.
+1. Create an `input` directory next to `inai-inai.exe`.
 1. Place image files in the `input` directory.
-1. Run the application DLL using the command below. The path to the DLL depends on your current directory:
+1. Run the published executable by double-clicking `inai-inai.exe`.
 
-   ```
-   dotnet .\src\bin\Debug\net10.0\win-x64\inai-inai.dll
-   ```
-
-Output images are saved in the `output` directory in the current directory.
+Output images are saved in the `output` directory next to `inai-inai.exe`.
 
 ### Usage 2
 
-1. Run the application DLL using the command below. The path to the DLL and image files depend on your current directory. Multiple files can be accepted:
+1. Drag and drop image files onto the published executable.
 
-   ```
-   dotnet .\src\bin\Debug\net10.0\win-x64\inai-inai.dll your\image.jpg another\input\image.jpg
-   ```
-
-Output images are saved in the `output` directory in the current directory.
+Output images are saved in the `output` directory next to `inai-inai.exe`.
 
 ### Usage 3
 
@@ -94,20 +76,6 @@ Output images are saved in the `output` directory in the current directory.
    ```
 
 Output images are saved in the `output` directory in the current directory.
-
-### Usage 5
-
-1. Create an `input` directory next to `inai-inai.exe`.
-1. Place image files in the `input` directory.
-1. Run the published executable by double-clicking `inai-inai.exe`.
-
-Output images are saved in the `output` directory next to `inai-inai.exe`.
-
-### Usage 6
-
-1. Drag and drop image files onto the published executable.
-
-Output images are saved in the `output` directory next to `inai-inai.exe`.
 
 ## Options
 

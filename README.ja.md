@@ -17,35 +17,25 @@ F# で書きました。
 ## 動作環境
 
 - Windows (64ビット)
-- .NET 8 以降
+- .NET 8 以降 (`dotnet publish` のため)
 - git (`git clone` のため)
 
-## ビルド
+## アプリを発行する
 
-リポジトリをクローンしてください。
+1. リポジトリをクローンしてください。
 
-```
-git clone git@github.com:taidalog/inai-inai.git
-cd inai-inai
-```
+   ```
+   git clone git@github.com:taidalog/inai-inai.git
+   cd inai-inai
+   ```
 
 もしくは、https://github.com/taidalog/inai-inai から ZIP をダウンロードしてもいいです。
 
-次にアプリケーションをビルドします。
+1. 次にアプリケーションを発行してください。
 
-```
-dotnet build
-```
-
-## パブリッシュ
-
-(すでにリポジトリをクローンしてあり、`inai-inai` ディレクトリにいるものとします)
-
-プロジェクトをパブリッシュします。
-
-```
-dotnet publish
-```
+   ```
+   dotnet publish
+   ```
 
 `inai-inai.exe` がリポジトリのルートに出力されます。この EXE ファイルはパソコン内のどこに置いても動作します。
 
@@ -53,25 +43,17 @@ dotnet publish
 
 ### 使い方 1
 
-1. カレントディレクトリに `input` ディレクトリを作成してください。
+1. `inai-inai.exe` と同じ階層に `input` ディレクトリを作成してください。
 1. `input` ディレクトリに画像ファイルを配置してください。
-1. 以下のコマンドでアプリケーションの DLL を実行してください。DLL へのパスはカレントディレクトリによって変わります。
+1. `inai-inai.exe` をダブルクリックして実行してください。
 
-   ```
-   dotnet .\src\bin\Debug\net10.0\win-x64\inai-inai.dll
-   ```
-
-結果の画像はカレントディレクトリの `output` ディレクトリに保存されます。
+結果の画像は `inai-inai.exe` と同じ階層の `output` ディレクトリに保存されます。
 
 ### 使い方 2
 
-1. 以下のコマンドでアプリケーションの DLL を実行してください。DLL や画像ファイルへのパスはカレントディレクトリによって変わります。複数のファイルを渡すことができます。
+1. 出来上がった実行ファイルの上に画像ファイルをドラッグアンドドロップしてください。
 
-   ```
-   dotnet .\src\bin\Debug\net10.0\win-x64\inai-inai.dll your\image.jpg another\input\image.jpg
-   ```
-
-結果の画像はカレントディレクトリの `output` ディレクトリに保存されます。
+結果の画像は `inai-inai.exe` と同じ階層の `output` ディレクトリに保存されます。
 
 ### 使い方 3
 
@@ -94,20 +76,6 @@ dotnet publish
    ```
 
 結果の画像はカレントディレクトリの `output` ディレクトリに保存されます。
-
-### 使い方 5
-
-1. `inai-inai.exe` と同じ階層に `input` ディレクトリを作成してください。
-1. `input` ディレクトリに画像ファイルを配置してください。
-1. `inai-inai.exe` をダブルクリックして実行してください。
-
-結果の画像は `inai-inai.exe` と同じ階層の `output` ディレクトリに保存されます。
-
-### 使い方 6
-
-1. 出来上がった実行ファイルの上に画像ファイルをドラッグアンドドロップしてください。
-
-結果の画像は `inai-inai.exe` と同じ階層の `output` ディレクトリに保存されます。
 
 ## オプション
 
