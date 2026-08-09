@@ -11,6 +11,8 @@
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <DebugType>embedded</DebugType>
 
+    <PublishDir>..</PublishDir>
+
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <Version>0.4.0</Version>
     <Authors>taidalog</Authors>

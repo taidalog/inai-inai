@@ -490,3 +490,6 @@ output/
 
 # Custom instructions for GitHub Copilot
 .github/copilot-instructions.md
+
+# Executable files
+*.exe
