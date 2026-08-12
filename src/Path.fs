@@ -31,3 +31,14 @@ module Path =
         | :? PathTooLongException as e -> Error(e, "fileName is too long.", fileName)
         | :? NotSupportedException as e -> Error(e, "fileName contains a colon (:).", fileName)
         | _ as e -> Error(e, "Unexpected error.", fileName)
+
+    let getFullPath (basePath: string) (path: string) : Result<string, exn * string * string> =
+        if String.IsNullOrEmpty path then
+            Error(ArgumentNullException "path", "", path)
+        else if String.IsNullOrEmpty basePath then
+            Error(ArgumentNullException "basePath", "", basePath)
+        else
+            try
+                Ok(Path.GetFullPath(path, basePath))
+            with e ->
+                Error(e, "Unexpected error.", path)
