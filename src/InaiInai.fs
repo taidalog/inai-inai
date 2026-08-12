@@ -81,33 +81,25 @@ module Main =
                     let outputDirectory: string =
                         results.GetResult(Output_Directory, defaultValue = "output")
 
-                    Path.GetFullPath(outputDirectory, workingDirectory) |> DirectoryInfo
+                    // Path.GetFullPath(outputDirectory, workingDirectory) |> DirectoryInfo
+                    Path.getFullPath workingDirectory outputDirectory |> Result.map DirectoryInfo
 
                 let inputDirectoryInfo =
                     let inputDirectory: string =
                         results.GetResult(Input_Directory, defaultValue = "input")
 
-                    Path.GetFullPath(inputDirectory, workingDirectory) |> DirectoryInfo
+                    // Path.GetFullPath(inputDirectory, workingDirectory) |> DirectoryInfo
+                    Path.getFullPath workingDirectory inputDirectory |> Result.map DirectoryInfo
 
-                if not isDnD && List.length paths = 0 && not inputDirectoryInfo.Exists then
-                    printfn "%s" (Resources.Strings.``Error: The directory {0} does not exist.`` inputDirectoryInfo)
-
-                    printfn
-                        "%s"
-                        (Resources.Strings.``Create {0}, add image files, and run the program again.``
-                            inputDirectoryInfo)
-
-                    printfn "%s" Resources.Strings.``Press any key to exit...``
-                    Console.ReadKey() |> ignore
+                match outputDirectoryInfo, inputDirectoryInfo with
+                | Error(e, msg, filename), _ ->
+                    printfn "Error:\t\t\t%s\n%s\n" filename msg
                     1
-                else
-                    let files: string array =
-                        if List.length paths > 0 then
-                            paths |> List.toArray
-                        else
-                            Directory.GetFiles(inputDirectoryInfo.FullName, "*.*")
-
-                    if Array.length files = 0 && not inputDirectoryInfo.Exists then
+                | _, Error(e, msg, filename) ->
+                    printfn "Error:\t\t\t%s\n%s\n" filename msg
+                    1
+                | Ok outputDirectoryInfo, Ok inputDirectoryInfo ->
+                    if not isDnD && List.length paths = 0 && not inputDirectoryInfo.Exists then
                         printfn "%s" (Resources.Strings.``Error: The directory {0} does not exist.`` inputDirectoryInfo)
 
                         printfn
@@ -119,40 +111,66 @@ module Main =
                         Console.ReadKey() |> ignore
                         1
                     else
+                        let files: string array =
+                            if List.length paths > 0 then
+                                paths |> List.toArray
+                            else
+                                Directory.GetFiles(inputDirectoryInfo.FullName, "*.*")
 
-                        printfn "%s" (Resources.Strings.``Processing {0} image(s)...\n`` (Array.length files))
-
-                        use faceDetector: FaceDetector = new FaceDetector()
-
-                        let fileInfos: Result<FileInfo, (exn * string * string)> array =
-                            files
-                            |> Array.map (fun x -> Path.GetFullPath(x, workingDirectory))
-                            |> Array.filter isSupportedFileFormat
-                            |> Array.filter Path.Exists
-                            |> Array.map tryFileInfo
-
-                        let processed =
-                            fileInfos
-                            |> Array.map (Result.bind (blurFaces faceDetector verbose outputDirectoryInfo))
-
-                        processed
-                        |> Array.iter (fun (x: Result<(string * float), (exn * string * string)>) ->
-                            match x with
-                            | Ok _ -> ()
-                            | Error(e, msg, filename) -> printfn "Error:\t\t\t%s\n%s\n" filename msg)
-
-                        if Array.length processed > 0 then
-                            printfn "%s" Resources.Strings.``Press any key to exit...``
-                            Console.ReadKey() |> ignore
-                            0
-                        else
-                            printfn "%s" Resources.Strings.``No image files were found.``
+                        if Array.length files = 0 && not inputDirectoryInfo.Exists then
+                            printfn
+                                "%s"
+                                (Resources.Strings.``Error: The directory {0} does not exist.`` inputDirectoryInfo)
 
                             printfn
                                 "%s"
-                                (Resources.Strings.``Place image files in {0} and run the program again.``
+                                (Resources.Strings.``Create {0}, add image files, and run the program again.``
                                     inputDirectoryInfo)
 
                             printfn "%s" Resources.Strings.``Press any key to exit...``
                             Console.ReadKey() |> ignore
-                            0
+                            1
+                        else
+
+                            printfn "%s" (Resources.Strings.``Processing {0} image(s)...\n`` (Array.length files))
+
+                            use faceDetector: FaceDetector = new FaceDetector()
+
+                            let fileInfos: Result<FileInfo, (exn * string * string)> array =
+                                files
+                                |> Array.map (Path.getFullPath workingDirectory)
+                                |> Array.filter (fun x ->
+                                    match x with
+                                    | Ok v -> isSupportedFileFormat v
+                                    | Error _ -> false)
+                                |> Array.filter (fun x ->
+                                    match x with
+                                    | Ok v -> Path.Exists v
+                                    | Error _ -> false)
+                                |> Array.map (Result.bind tryFileInfo)
+
+                            let processed =
+                                fileInfos
+                                |> Array.map (Result.bind (blurFaces faceDetector verbose outputDirectoryInfo))
+
+                            processed
+                            |> Array.iter (fun (x: Result<(string * float), (exn * string * string)>) ->
+                                match x with
+                                | Ok _ -> ()
+                                | Error(e, msg, filename) -> printfn "Error:\t\t\t%s\n%s\n" filename msg)
+
+                            if Array.length processed > 0 then
+                                printfn "%s" Resources.Strings.``Press any key to exit...``
+                                Console.ReadKey() |> ignore
+                                0
+                            else
+                                printfn "%s" Resources.Strings.``No image files were found.``
+
+                                printfn
+                                    "%s"
+                                    (Resources.Strings.``Place image files in {0} and run the program again.``
+                                        inputDirectoryInfo)
+
+                                printfn "%s" Resources.Strings.``Press any key to exit...``
+                                Console.ReadKey() |> ignore
+                                0
