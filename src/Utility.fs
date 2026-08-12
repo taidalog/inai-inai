@@ -16,6 +16,7 @@
 
 namespace InaiInai
 
+open System
 open System.IO
 open System.Diagnostics
 
@@ -30,8 +31,8 @@ module Utility =
                 match parentProcess.MainModule with
                 | null -> false
                 | (mainModule: ProcessModule) ->
-                    let filename = (FileInfo mainModule.FileName).Name
-                    List.contains (filename.ToLowerInvariant()) [ "explorer.exe" ]
+                    let filename: string = Path.GetFileName mainModule.FileName
+                    StringComparer.OrdinalIgnoreCase.Equals(filename, "explorer.exe")
             with _ ->
                 false
 
