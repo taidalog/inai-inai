@@ -188,7 +188,7 @@ module Image =
                 mat.ToBitmap dstBitmap
                 orientation |> Option.iter (fun x -> dstBitmap.SetPropertyItem x)
 
-                let outputPath = uniqueFileName outputDirectory fileInfo
+                let outputPath = Path.uniqueFileName outputDirectory fileInfo
                 dstBitmap.Save outputPath
                 // Cv2.ImWrite(outputPath, mat) |> ignore
 
