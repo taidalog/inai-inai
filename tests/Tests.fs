@@ -22,25 +22,23 @@ open InaiInai.Path
 
 [<Fact>]
 let ``Supposing "no-such-file.na" does't exist in "output"`` () =
-    let expected: string =
+    let expected: Result<string, (exn * string * string)> =
         let fileInfo = FileInfo @"output\no-such-file.na"
-        fileInfo.FullName
+        Ok fileInfo.FullName
 
-    let actual: string =
+    let actual: Result<string, (exn * string * string)> =
         uniqueFileName (DirectoryInfo "output") (FileInfo @"no-such-file.na")
-        |> Result.defaultValue ""
 
     Assert.Equal(expected, actual)
 
 [<Fact>]
 let ``Supposing "existing-file-name.jpg" exists in "output"`` () =
-    let expected: string =
+    let expected: Result<string, (exn * string * string)> =
         let fileInfo = FileInfo @"output\existing-file-name (1).jpg"
-        fileInfo.FullName
+        Ok fileInfo.FullName
 
-    let actual: string =
+    let actual: Result<string, (exn * string * string)> =
         uniqueFileName (DirectoryInfo "output") (FileInfo @"existing-file-name.jpg")
-        |> Result.defaultValue ""
 
     Assert.Equal(expected, actual)
 
@@ -48,12 +46,11 @@ let ``Supposing "existing-file-name.jpg" exists in "output"`` () =
 let ``Supposing "one-and-two-existing.jpg", "one-and-two-existing (1).jpg" and "one-and-two-existing (2).jpg" exist in "output"``
     ()
     =
-    let expected: string =
+    let expected: Result<string, (exn * string * string)> =
         let fileInfo = FileInfo @"output\one-and-two-existing (3).jpg"
-        fileInfo.FullName
+        Ok fileInfo.FullName
 
-    let actual: string =
+    let actual: Result<string, (exn * string * string)> =
         uniqueFileName (DirectoryInfo "output") (FileInfo @"one-and-two-existing.jpg")
-        |> Result.defaultValue ""
 
     Assert.Equal(expected, actual)
