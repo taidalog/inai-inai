@@ -58,7 +58,12 @@ module Image =
 
         use mask: Mat = new Mat(size, MatType.CV_32FC1, Scalar.All 0.0)
         let center = Point(w / 2, h / 2)
-        let axes = Size(w / 2 - edgeBlurKsize, h / 2 - edgeBlurKsize)
+
+        let axes =
+            let w' = w / 2 - edgeBlurKsize |> max 1
+            let h' = h / 2 - edgeBlurKsize |> max 1
+            Size(w', h')
+
         Cv2.Ellipse(mask, center, axes, 0.0, 0.0, 360.0, Scalar.All 255.0, -1)
 
         Cv2.GaussianBlur(mask, mask, Size(edgeBlurKsize, edgeBlurKsize), 0.0)
