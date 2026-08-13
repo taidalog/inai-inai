@@ -15,7 +15,7 @@
 
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <VersionPrefix>1.0.0</VersionPrefix>
-    <VersionSuffix>rc.1</VersionSuffix>
+    <VersionSuffix></VersionSuffix>
 
     <Authors>taidalog</Authors>
     <Description>A privacy tool that blurs faces in images.</Description>

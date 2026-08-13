@@ -36,29 +36,15 @@ module Utility =
             with _ ->
                 false
 
-    let uniqueFileName (directoryInfo: DirectoryInfo) (fileInfo: FileInfo) : string =
-        let rec loop (dirPath: string) (baseName: string) (extension: string) (n: int) : string =
-            let duplicationCount = if n = 0 then "" else $" (%d{n})"
-
-            let candidatePath =
-                Path.GetFullPath($"%s{baseName}%s{duplicationCount}%s{extension}", dirPath)
-
-            if Path.Exists candidatePath |> not then
-                candidatePath
-            else
-                loop dirPath baseName extension (n + 1)
-
-        let fileBaseName = Path.GetFileNameWithoutExtension fileInfo.Name
-        let fileExtension = fileInfo.Extension
-
-        loop directoryInfo.FullName fileBaseName fileExtension 0
-
     let isSupportedFileFormat (path: string) : bool =
-        let extension: string = Path.GetExtension path
+        if String.IsNullOrEmpty path then
+            false
+        else
+            let extension: string = Path.GetExtension path
 
-        List.contains
-            (extension.ToUpper())
-            [ ".BMP"; ".GIF"; ".EXIF"; ".JPG"; ".JPEG"; ".JPE"; ".PNG"; ".TIFF"; ".TIF" ]
+            List.contains
+                (extension.ToUpper())
+                [ ".BMP"; ".GIF"; ".EXIF"; ".JPG"; ".JPEG"; ".JPE"; ".PNG"; ".TIFF"; ".TIF" ]
 
     let toOddNumber (n: int) : int = n + if n % 2 = 0 then 1 else 0
 

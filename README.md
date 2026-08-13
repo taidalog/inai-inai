@@ -8,6 +8,25 @@ Written in F#.
 
 [Japanese README](README.ja.md)
 
+## Table of Contents
+
+- [Features](#features)
+- [Requirements](#requirements)
+- [Publishing the application](#publishing-the-application)
+- [Usage](#usage)
+  - [Example 1](#example-1)
+  - [Example 2](#example-2)
+  - [Example 3](#example-3)
+  - [Example 4](#example-4)
+  - [Example 5](#example-5)
+  - [Example 6](#example-6)
+- [Options](#options)
+- [Known Issues](#known-issues)
+- [Release Notes](#release-notes)
+- [License](#license)
+  - [Third-party License Compliance](#third-party-license-compliance)
+- [Copyright](#copyright)
+
 ## Features
 
 - Detects faces in images and blurs them.
@@ -29,37 +48,37 @@ Written in F#.
    cd inai-inai
    ```
 
-... or download ZIP from https://github.com/taidalog/inai-inai
+   ... or download ZIP from https://github.com/taidalog/inai-inai
 
-1. Then publish the application:
+1. Publish the application:
 
    ```
    dotnet publish
    ```
 
-The resulting `inai-inai.exe` will be output to the repository root. The EXE file can be moved anywhere on your computer.
+The published executable file (`inai-inai.exe`) will be output to the repository root. The EXE file can be moved anywhere on your computer.
 
 ## Usage
 
-### Usage 1
+### Example 1
 
 1. Create an `input` directory next to `inai-inai.exe`.
 1. Place image files in the `input` directory.
-1. Run the published executable by double-clicking `inai-inai.exe`.
+1. Run `inai-inai.exe` by double-clicking it.
 
 Output images are saved in the `output` directory next to `inai-inai.exe`.
 
-### Usage 2
+### Example 2
 
-1. Drag and drop image files onto the published executable.
+1. Drag and drop image files onto `inai-inai.exe`.
 
 Output images are saved in the `output` directory next to `inai-inai.exe`.
 
-### Usage 3
+### Example 3
 
 1. Create an `input` directory in the current directory.
 1. Place image files in the `input` directory.
-1. Run the published executable using the command below. The path to the EXE depends on your current directory:
+1. Run `inai-inai.exe` using the command below. The path to the EXE depends on your current directory:
 
    ```
    .\inai-inai.exe
@@ -67,9 +86,9 @@ Output images are saved in the `output` directory next to `inai-inai.exe`.
 
 Output images are saved in the `output` directory in the current directory.
 
-### Usage 4
+### Example 4
 
-1. Run the published executable using the command below. The path to the EXE and image files depend on your current directory. Multiple files can be accepted:
+1. Run `inai-inai.exe` using the command below. The path to the EXE and image files depend on your current directory. Multiple files can be accepted:
 
    ```
    .\inai-inai.exe your\image.jpg another\input\image.jpg
@@ -77,7 +96,7 @@ Output images are saved in the `output` directory in the current directory.
 
 Output images are saved in the `output` directory in the current directory.
 
-### Usage 5
+### Example 5
 
 You can pass image files to `inai-inai.exe` with PowerShell. The command below passes all the files in the current directory. The path to the EXE depends on your current directory.
 
@@ -87,7 +106,7 @@ You can pass image files to `inai-inai.exe` with PowerShell. The command below p
 
 Output images are saved in the `output` directory in the current directory.
 
-### Usage 6
+### Example 6
 
 You can pass image files to `inai-inai.exe` with PowerShell. The command below passes the files in the `input` directory whose name starts with "IMG\_". The path to the EXE depends on your current directory.
 
