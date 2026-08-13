@@ -31,6 +31,10 @@
     <value>Detected face(s):{2}{0} face(s), {1} seconds</value>
   </data>
 
+  <data name="Skipped face(s):\t{0} face(s)" xml:space="preserve">
+    <value>Skipped face(s):{1}{0} face(s)</value>
+  </data>
+
   <data name="Image dimensions:\t{0} x {1} pixels" xml:space="preserve">
     <value>Image dimensions:{2}{0} x {1} pixels</value>
   </data>

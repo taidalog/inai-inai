@@ -31,6 +31,10 @@
     <value>顔を検出しました:{2}{0} 件、{1} 秒</value>
   </data>
 
+  <data name="Skipped face(s):\t{0} face(s)" xml:space="preserve">
+    <value>顔をスキップしました:{1}{0} 件</value>
+  </data>
+
   <data name="Image dimensions:\t{0} x {1} pixels" xml:space="preserve">
     <value>画像の大きさ:{2}{2}{0} x {1} ピクセル</value>
   </data>

@@ -63,6 +63,9 @@ module Resources =
                 "\t"
             )
 
+        let ``Skipped face(s):\t{0} face(s)`` (n: int) : string =
+            String.Format(resourceManager.GetString @"Skipped face(s):\t{0} face(s)", n, "\t")
+
         let ``Image dimensions:\t{0} x {1} pixels`` (width: int) (height: int) : string =
             String.Format(resourceManager.GetString @"Image dimensions:\t{0} x {1} pixels", width, height, "\t")
 
