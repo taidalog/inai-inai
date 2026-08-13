@@ -18,7 +18,7 @@ module InaiInai.Tests
 
 open System.IO
 open Xunit
-open InaiInai.Utility
+open InaiInai.Path
 
 [<Fact>]
 let ``Supposing "no-such-file.na" does't exist in "output"`` () =
@@ -28,6 +28,7 @@ let ``Supposing "no-such-file.na" does't exist in "output"`` () =
 
     let actual: string =
         uniqueFileName (DirectoryInfo "output") (FileInfo @"no-such-file.na")
+        |> Result.defaultValue ""
 
     Assert.Equal(expected, actual)
 
@@ -39,6 +40,7 @@ let ``Supposing "existing-file-name.jpg" exists in "output"`` () =
 
     let actual: string =
         uniqueFileName (DirectoryInfo "output") (FileInfo @"existing-file-name.jpg")
+        |> Result.defaultValue ""
 
     Assert.Equal(expected, actual)
 
@@ -52,5 +54,6 @@ let ``Supposing "one-and-two-existing.jpg", "one-and-two-existing (1).jpg" and "
 
     let actual: string =
         uniqueFileName (DirectoryInfo "output") (FileInfo @"one-and-two-existing.jpg")
+        |> Result.defaultValue ""
 
     Assert.Equal(expected, actual)
