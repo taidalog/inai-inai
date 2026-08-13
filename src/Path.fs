@@ -59,7 +59,7 @@ module Path =
             match candidatePath with
             | Error(x: exn * string * string) -> Error x
             | Ok(v: string) ->
-                if Path.Exists v |> not then
+                if File.Exists v |> not then
                     Ok v
                 else
                     loop dirPath baseName extension (n + 1)
