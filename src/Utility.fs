@@ -37,11 +37,14 @@ module Utility =
                 false
 
     let isSupportedFileFormat (path: string) : bool =
-        let extension: string = Path.GetExtension path
+        if String.IsNullOrEmpty path then
+            false
+        else
+            let extension: string = Path.GetExtension path
 
-        List.contains
-            (extension.ToUpper())
-            [ ".BMP"; ".GIF"; ".EXIF"; ".JPG"; ".JPEG"; ".JPE"; ".PNG"; ".TIFF"; ".TIF" ]
+            List.contains
+                (extension.ToUpper())
+                [ ".BMP"; ".GIF"; ".EXIF"; ".JPG"; ".JPEG"; ".JPE"; ".PNG"; ".TIFF"; ".TIF" ]
 
     let toOddNumber (n: int) : int = n + if n % 2 = 0 then 1 else 0
 

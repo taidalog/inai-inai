@@ -19,6 +19,7 @@ module InaiInai.Tests
 open System.IO
 open Xunit
 open InaiInai.Path
+open InaiInai.Utility
 
 [<Fact>]
 let ``Supposing "no-such-file.na" does't exist in "output"`` () =
@@ -53,4 +54,20 @@ let ``Supposing "one-and-two-existing.jpg", "one-and-two-existing (1).jpg" and "
     let actual: Result<string, (exn * string * string)> =
         uniqueFileName (DirectoryInfo "output") (FileInfo @"one-and-two-existing.jpg")
 
+    Assert.Equal(expected, actual)
+
+[<Theory>]
+[<InlineData("image.bmp", true)>]
+[<InlineData("image.gif", true)>]
+[<InlineData("image.exif", true)>]
+[<InlineData("image.jpg", true)>]
+[<InlineData("image.jpeg", true)>]
+[<InlineData("image.jpe", true)>]
+[<InlineData("image.png", true)>]
+[<InlineData("image.tiff", true)>]
+[<InlineData("image.tif", true)>]
+[<InlineData("image.txt", false)>]
+[<InlineData("", false)>]
+let ``isSupportedFileFormat should return false for empty string`` (path: string, expected: bool) =
+    let actual: bool = isSupportedFileFormat path
     Assert.Equal(expected, actual)
