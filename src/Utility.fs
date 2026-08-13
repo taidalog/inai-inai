@@ -16,14 +16,25 @@
 
 namespace InaiInai
 
+open System
 open System.IO
 open System.Diagnostics
 
 module Utility =
     let isDragAndDropped (ppid: int) (argsCount: int) : bool =
-        use parentProcces = Process.GetProcessById ppid
-        let filename = (FileInfo parentProcces.MainModule.FileName).Name
-        List.contains (filename.ToLowerInvariant()) [ "explorer.exe" ] && argsCount > 0
+        if argsCount <= 0 then
+            false
+        else
+            try
+                use parentProcess: Process = Process.GetProcessById ppid
+
+                match parentProcess.MainModule with
+                | null -> false
+                | (mainModule: ProcessModule) ->
+                    let filename: string = Path.GetFileName mainModule.FileName
+                    StringComparer.OrdinalIgnoreCase.Equals(filename, "explorer.exe")
+            with _ ->
+                false
 
     let uniqueFileName (directoryInfo: DirectoryInfo) (fileInfo: FileInfo) : string =
         let rec loop (dirPath: string) (baseName: string) (extension: string) (n: int) : string =

@@ -58,7 +58,12 @@ module Image =
 
         use mask: Mat = new Mat(size, MatType.CV_32FC1, Scalar.All 0.0)
         let center = Point(w / 2, h / 2)
-        let axes = Size(w / 2 - edgeBlurKsize, h / 2 - edgeBlurKsize)
+
+        let axes =
+            let w' = w / 2 - edgeBlurKsize |> max 1
+            let h' = h / 2 - edgeBlurKsize |> max 1
+            Size(w', h')
+
         Cv2.Ellipse(mask, center, axes, 0.0, 0.0, 360.0, Scalar.All 255.0, -1)
 
         Cv2.GaussianBlur(mask, mask, Size(edgeBlurKsize, edgeBlurKsize), 0.0)
@@ -130,17 +135,24 @@ module Image =
                 let t1 = DateTime.Now
 
                 use mat: Mat = bitmap.ToMat()
-                printfn "%s" (Resources.Strings.``Image dimensions:\t{0} x {1} pixels`` mat.Width mat.Height)
-
                 let matRect: Rectangle = Rectangle(0, 0, mat.Width, mat.Height)
-                printfn "%s" (Resources.Strings.``Image size:\t\t{0} MB`` $"{float fileInfo.Length / 1024. / 1024.:F2}")
 
                 // Cv2.ImShow("Original Image", mat)
                 // Cv2.WaitKey 0 |> ignore
                 // Cv2.DestroyAllWindows()
 
-                faces
-                |> Array.filter (fun (x: FaceDetectionResult) -> matRect.Contains x.Rectangle)
+                let facesToBlur =
+                    faces
+                    |> Array.filter (fun (x: FaceDetectionResult) -> matRect.Contains x.Rectangle)
+
+                printfn
+                    "%s"
+                    (Resources.Strings.``Skipped face(s):\t{0} face(s)`` (Array.length faces - Array.length facesToBlur))
+
+                printfn "%s" (Resources.Strings.``Image dimensions:\t{0} x {1} pixels`` mat.Width mat.Height)
+                printfn "%s" (Resources.Strings.``Image size:\t\t{0} MB`` $"{float fileInfo.Length / 1024. / 1024.:F2}")
+
+                facesToBlur
                 |> Array.iter (fun (x: FaceDetectionResult) ->
                     let rect: System.Drawing.Rectangle = x.Rectangle
 
