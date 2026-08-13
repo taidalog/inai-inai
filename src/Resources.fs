@@ -78,6 +78,9 @@ module Resources =
         let ``Masking time:\t\t{0} seconds`` (totalSeconds: float) : string =
             String.Format(resourceManager.GetString @"Masking time:\t\t{0} seconds", totalSeconds, "\t")
 
+        let ``Couldn't save image:\t{0}\n`` (originalPath: string) : string =
+            String.Format(resourceManager.GetString @"Couldn't save image:\t{0}\n", originalPath, "\t", "\n")
+
         let ``Saved image:\t\t{0}, {1} seconds\n`` (outputPath: string) (totalSeconds: float) : string =
             String.Format(
                 resourceManager.GetString @"Saved image:\t\t{0}, {1} seconds\n",

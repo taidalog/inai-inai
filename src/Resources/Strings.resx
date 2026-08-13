@@ -51,6 +51,10 @@
     <value>Masking time:{1}{1}{0} seconds</value>
   </data>
 
+  <data name="Couldn't save image:\t{0}\n" xml:space="preserve">
+    <value>Couldn't save image:{1}{0}{2}</value>
+  </data>
+
   <data name="Saved image:\t\t{0}, {1} seconds\n" xml:space="preserve">
     <value>Saved image:{2}{2}{0}, {1} seconds{3}</value>
   </data>

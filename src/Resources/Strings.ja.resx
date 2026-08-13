@@ -51,6 +51,10 @@
     <value>ぼかしをかけました:{1}{0} 秒</value>
   </data>
 
+  <data name="Couldn't save image:\t{0}\n" xml:space="preserve">
+    <value>画像を保存できませんでした。:{1}{0}{2}</value>
+  </data>
+
   <data name="Saved image:\t\t{0}, {1} seconds\n" xml:space="preserve">
     <value>画像を保存しました:{2}{0}、{1} 秒{3}</value>
   </data>

@@ -189,16 +189,22 @@ module Image =
                 orientation |> Option.iter (fun x -> dstBitmap.SetPropertyItem x)
 
                 let outputPath = Path.uniqueFileName outputDirectory fileInfo
-                dstBitmap.Save outputPath
-                // Cv2.ImWrite(outputPath, mat) |> ignore
 
-                printfn
-                    "%s"
-                    (Resources.Strings.``Saved image:\t\t{0}, {1} seconds\n``
-                        outputPath
-                        (DateTime.Now - t2).TotalSeconds)
+                match outputPath with
+                | Error(e, x, y) ->
+                    printfn "%s" (Resources.Strings.``Couldn't save image:\t{0}\n`` fileInfo.FullName)
+                    Error(e, x, y)
+                | Ok(outputPath: string) ->
+                    dstBitmap.Save outputPath
+                    // Cv2.ImWrite(outputPath, mat) |> ignore
 
-                Ok(outputPath, (DateTime.Now - t2).TotalSeconds)
+                    printfn
+                        "%s"
+                        (Resources.Strings.``Saved image:\t\t{0}, {1} seconds\n``
+                            outputPath
+                            (DateTime.Now - t2).TotalSeconds)
+
+                    Ok(outputPath, (DateTime.Now - t2).TotalSeconds)
         with
         | :? FileNotFoundException as e ->
             printfn "Error:\t\t\t%s\n" e.Message

@@ -43,17 +43,26 @@ module Path =
             with e ->
                 Error(e, "Unexpected error.", path)
 
-    let uniqueFileName (directoryInfo: DirectoryInfo) (fileInfo: FileInfo) : string =
-        let rec loop (dirPath: string) (baseName: string) (extension: string) (n: int) : string =
-            let duplicationCount = if n = 0 then "" else $" (%d{n})"
+    let uniqueFileName (directoryInfo: DirectoryInfo) (fileInfo: FileInfo) : Result<string, exn * string * string> =
 
-            let candidatePath =
-                Path.GetFullPath($"%s{baseName}%s{duplicationCount}%s{extension}", dirPath)
+        let rec loop
+            (dirPath: string)
+            (baseName: string)
+            (extension: string)
+            (n: int)
+            : Result<string, exn * string * string> =
 
-            if Path.Exists candidatePath |> not then
-                candidatePath
-            else
-                loop dirPath baseName extension (n + 1)
+            let candidatePath: Result<string, (exn * string * string)> =
+                let duplicationCount = if n = 0 then "" else $" (%d{n})"
+                getFullPath dirPath $"%s{baseName}%s{duplicationCount}%s{extension}"
+
+            match candidatePath with
+            | Error(x: exn * string * string) -> Error x
+            | Ok(v: string) ->
+                if Path.Exists v |> not then
+                    Ok v
+                else
+                    loop dirPath baseName extension (n + 1)
 
         let fileBaseName = Path.GetFileNameWithoutExtension fileInfo.Name
         let fileExtension = fileInfo.Extension
