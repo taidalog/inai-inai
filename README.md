@@ -8,6 +8,25 @@ Written in F#.
 
 [Japanese README](README.ja.md)
 
+## Table of Contents
+
+- [Features](#features)
+- [Requirements](#requirements)
+- [Publishing the application](#publishing-the-application)
+- [Usage](#usage)
+  - [Example 1](#example-1)
+  - [Example 2](#example-2)
+  - [Example 3](#example-3)
+  - [Example 4](#example-4)
+  - [Example 5](#example-5)
+  - [Example 6](#example-6)
+- [Options](#options)
+- [Known Issues](#known-issues)
+- [Release Notes](#release-notes)
+- [License](#license)
+  - [Third-party License Compliance](#third-party-license-compliance)
+- [Copyright](#copyright)
+
 ## Features
 
 - Detects faces in images and blurs them.
