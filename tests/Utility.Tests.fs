@@ -14,60 +14,41 @@
    limitations under the License.
 *)
 
-module InaiInai.Tests
+namespace InaiInai.Tests
 
-open System.IO
+open System
 open Xunit
-open InaiInai.Path
 open InaiInai.Utility
 
-[<Fact>]
-let ``Supposing "no-such-file.na" does't exist in "output"`` () =
-    let expected: Result<string, (exn * string * string)> =
-        let fileInfo = FileInfo @"output\no-such-file.na"
-        Ok fileInfo.FullName
+module Utility =
+    [<Theory>]
+    [<InlineData("image.bmp", true)>]
+    [<InlineData("image.gif", true)>]
+    [<InlineData("image.exif", true)>]
+    [<InlineData("image.jpg", true)>]
+    [<InlineData("image.jpeg", true)>]
+    [<InlineData("image.jpe", true)>]
+    [<InlineData("image.png", true)>]
+    [<InlineData("image.tiff", true)>]
+    [<InlineData("image.tif", true)>]
+    [<InlineData("image.txt", false)>]
+    [<InlineData("", false)>]
+    let ``isSupportedFileFormat should return false for empty string`` (path: string, expected: bool) =
+        let actual: bool = isSupportedFileFormat path
+        Assert.Equal(expected, actual)
 
-    let actual: Result<string, (exn * string * string)> =
-        uniqueFileName (DirectoryInfo "output") (FileInfo @"no-such-file.na")
-
-    Assert.Equal(expected, actual)
-
-[<Fact>]
-let ``Supposing "existing-file-name.jpg" exists in "output"`` () =
-    let expected: Result<string, (exn * string * string)> =
-        let fileInfo = FileInfo @"output\existing-file-name (1).jpg"
-        Ok fileInfo.FullName
-
-    let actual: Result<string, (exn * string * string)> =
-        uniqueFileName (DirectoryInfo "output") (FileInfo @"existing-file-name.jpg")
-
-    Assert.Equal(expected, actual)
-
-[<Fact>]
-let ``Supposing "one-and-two-existing.jpg", "one-and-two-existing (1).jpg" and "one-and-two-existing (2).jpg" exist in "output"``
-    ()
-    =
-    let expected: Result<string, (exn * string * string)> =
-        let fileInfo = FileInfo @"output\one-and-two-existing (3).jpg"
-        Ok fileInfo.FullName
-
-    let actual: Result<string, (exn * string * string)> =
-        uniqueFileName (DirectoryInfo "output") (FileInfo @"one-and-two-existing.jpg")
-
-    Assert.Equal(expected, actual)
-
-[<Theory>]
-[<InlineData("image.bmp", true)>]
-[<InlineData("image.gif", true)>]
-[<InlineData("image.exif", true)>]
-[<InlineData("image.jpg", true)>]
-[<InlineData("image.jpeg", true)>]
-[<InlineData("image.jpe", true)>]
-[<InlineData("image.png", true)>]
-[<InlineData("image.tiff", true)>]
-[<InlineData("image.tif", true)>]
-[<InlineData("image.txt", false)>]
-[<InlineData("", false)>]
-let ``isSupportedFileFormat should return false for empty string`` (path: string, expected: bool) =
-    let actual: bool = isSupportedFileFormat path
-    Assert.Equal(expected, actual)
+    [<Theory>]
+    [<InlineData(0, 1)>]
+    [<InlineData(1, 1)>]
+    [<InlineData(2, 3)>]
+    [<InlineData(3, 3)>]
+    [<InlineData(Int32.MaxValue, Int32.MaxValue)>]
+    [<InlineData(-1, -1)>]
+    [<InlineData(-2, -1)>]
+    [<InlineData(-3, -3)>]
+    [<InlineData(Int32.MinValue, Int32.MinValue + 1)>]
+    let ``toOddNumber should return the minimum odd number that is greater or equal to the input number.``
+        (n: int, expected: int)
+        =
+        let actual: int = toOddNumber n
+        Assert.Equal(expected, actual)
