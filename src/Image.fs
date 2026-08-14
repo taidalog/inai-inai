@@ -38,37 +38,42 @@ module Image =
         else
             None
 
+    let maskf (ksize: int) (size: Size) : Mat =
+        let w, h = size.Width, size.Height
+
+        let mask: Mat = new Mat(size, MatType.CV_32FC1, Scalar.All 0.0)
+        let center = Point(w / 2, h / 2)
+
+        let axes =
+            let w' = w / 2 - ksize |> max 1
+            let h' = h / 2 - ksize |> max 1
+            Size(w', h')
+
+        Cv2.Ellipse(mask, center, axes, 0.0, 0.0, 360.0, Scalar.All 255.0, -1)
+
+        Cv2.GaussianBlur(mask, mask, Size(ksize, ksize), 0.0)
+        Cv2.Multiply(mask, Scalar.All(1.0 / 255.0), mask)
+
+        mask
+
     let gaussianBlurCircularEdge (img: Mat) (edgeBlurKsize: int) (faceBlurKsize: int) : Mat =
         // Ensure we work on a 3-channel BGR image. PNGs may have alpha (4 channels),
         // which causes channel-count mismatches when multiplying with a 3-channel mask.
         let hasAlpha = img.Channels() = 4
 
-        use src =
+        use src: Mat =
             if hasAlpha then
-                let tmp = new Mat()
+                let tmp: Mat = new Mat()
                 Cv2.CvtColor(img, tmp, ColorConversionCodes.BGRA2BGR)
                 tmp
             else
-                let tmp = new Mat()
+                let tmp: Mat = new Mat()
                 img.CopyTo tmp
                 tmp
 
-        let size = src.Size()
-        let w, h = size.Width, size.Height
+        let size: Size = src.Size()
 
-        use mask: Mat = new Mat(size, MatType.CV_32FC1, Scalar.All 0.0)
-        let center = Point(w / 2, h / 2)
-
-        let axes =
-            let w' = w / 2 - edgeBlurKsize |> max 1
-            let h' = h / 2 - edgeBlurKsize |> max 1
-            Size(w', h')
-
-        Cv2.Ellipse(mask, center, axes, 0.0, 0.0, 360.0, Scalar.All 255.0, -1)
-
-        Cv2.GaussianBlur(mask, mask, Size(edgeBlurKsize, edgeBlurKsize), 0.0)
-        Cv2.Multiply(mask, Scalar.All(1.0 / 255.0), mask)
-
+        use mask: Mat = maskf edgeBlurKsize size
         use mask3Ch: Mat = new Mat()
         Cv2.Merge(ReadOnlySpan<Mat> [| mask; mask; mask |], mask3Ch)
 
