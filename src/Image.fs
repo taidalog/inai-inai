@@ -25,11 +25,6 @@ open OpenCvSharp.GdipExtensions
 open Utility
 
 module Image =
-    let detectFaces (faceDetector: FaceDetector) (fileInfo: FileInfo) : FaceDetectionResult array =
-        use bitmap: Bitmap = new Bitmap(fileInfo.FullName)
-        let faces: FaceDetectionResult array = faceDetector.Forward bitmap
-        faces
-
     let getImageOrientationProperty (bitmap: Bitmap) : Imaging.PropertyItem option =
         let orientationPropertyId = 0x0112
 
