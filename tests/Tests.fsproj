@@ -7,7 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Tests.fs" />
+    <Compile Include="Image.Tests.fs" />
+    <Compile Include="Path.Tests.fs" />
+    <Compile Include="Utility.Tests.fs" />
   </ItemGroup>
 
   <ItemGroup>

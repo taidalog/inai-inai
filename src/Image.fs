@@ -25,11 +25,6 @@ open OpenCvSharp.GdipExtensions
 open Utility
 
 module Image =
-    let detectFaces (faceDetector: FaceDetector) (fileInfo: FileInfo) : FaceDetectionResult array =
-        use bitmap: Bitmap = new Bitmap(fileInfo.FullName)
-        let faces: FaceDetectionResult array = faceDetector.Forward bitmap
-        faces
-
     let getImageOrientationProperty (bitmap: Bitmap) : Imaging.PropertyItem option =
         let orientationPropertyId = 0x0112
 
@@ -38,42 +33,49 @@ module Image =
         else
             None
 
-    let gaussianBlurCircularEdge (img: Mat) (edgeBlurKsize: int) (faceBlurKsize: int) : Mat =
-        // Ensure we work on a 3-channel BGR image. PNGs may have alpha (4 channels),
-        // which causes channel-count mismatches when multiplying with a 3-channel mask.
-        let hasAlpha = img.Channels() = 4
+    let ksizef (width: int) (height: int) : int =
+        min width height / 14 |> toOddNumber |> max 1
 
-        use src =
-            if hasAlpha then
-                let tmp = new Mat()
-                Cv2.CvtColor(img, tmp, ColorConversionCodes.BGRA2BGR)
-                tmp
-            else
-                let tmp = new Mat()
-                img.CopyTo tmp
-                tmp
-
-        let size = src.Size()
+    let maskf (ksize: int) (size: Size) : Mat =
         let w, h = size.Width, size.Height
 
-        use mask: Mat = new Mat(size, MatType.CV_32FC1, Scalar.All 0.0)
+        let mask: Mat = new Mat(size, MatType.CV_32FC1, Scalar.All 0.0)
         let center = Point(w / 2, h / 2)
 
         let axes =
-            let w' = w / 2 - edgeBlurKsize |> max 1
-            let h' = h / 2 - edgeBlurKsize |> max 1
+            let w' = w / 2 - ksize |> max 1
+            let h' = h / 2 - ksize |> max 1
             Size(w', h')
 
         Cv2.Ellipse(mask, center, axes, 0.0, 0.0, 360.0, Scalar.All 255.0, -1)
 
-        Cv2.GaussianBlur(mask, mask, Size(edgeBlurKsize, edgeBlurKsize), 0.0)
+        Cv2.GaussianBlur(mask, mask, Size(ksize, ksize), 0.0)
         Cv2.Multiply(mask, Scalar.All(1.0 / 255.0), mask)
+
+        mask
+
+    let gaussianBlurCircularEdge (mask: Mat) (img: Mat) (ksize: int) : Mat =
+        // Ensure we work on a 3-channel BGR image. PNGs may have alpha (4 channels),
+        // which causes channel-count mismatches when multiplying with a 3-channel mask.
+        let hasAlpha = img.Channels() = 4
+
+        use src: Mat =
+            if hasAlpha then
+                let tmp: Mat = new Mat()
+                Cv2.CvtColor(img, tmp, ColorConversionCodes.BGRA2BGR)
+                tmp
+            else
+                let tmp: Mat = new Mat()
+                img.CopyTo tmp
+                tmp
+
+        let size: Size = src.Size()
 
         use mask3Ch: Mat = new Mat()
         Cv2.Merge(ReadOnlySpan<Mat> [| mask; mask; mask |], mask3Ch)
 
         use blurredImg: Mat = new Mat()
-        Cv2.GaussianBlur(src, blurredImg, Size(faceBlurKsize, faceBlurKsize), 0.0)
+        Cv2.GaussianBlur(src, blurredImg, Size(ksize, ksize), 0.0)
 
         use imgFloat: Mat = new Mat()
         use blurFloat: Mat = new Mat()
@@ -137,40 +139,45 @@ module Image =
                 use mat: Mat = bitmap.ToMat()
                 let matRect: Rectangle = Rectangle(0, 0, mat.Width, mat.Height)
 
-                // Cv2.ImShow("Original Image", mat)
-                // Cv2.WaitKey 0 |> ignore
-                // Cv2.DestroyAllWindows()
-
-                let facesToBlur =
-                    faces
-                    |> Array.filter (fun (x: FaceDetectionResult) -> matRect.Contains x.Rectangle)
-
-                printfn
-                    "%s"
-                    (Resources.Strings.``Skipped face(s):\t{0} face(s)`` (Array.length faces - Array.length facesToBlur))
-
                 printfn "%s" (Resources.Strings.``Image dimensions:\t{0} x {1} pixels`` mat.Width mat.Height)
                 printfn "%s" (Resources.Strings.``Image size:\t\t{0} MB`` $"{float fileInfo.Length / 1024. / 1024.:F2}")
 
-                facesToBlur
+                faces
                 |> Array.iter (fun (x: FaceDetectionResult) ->
                     let rect: System.Drawing.Rectangle = x.Rectangle
 
                     if verbose then
                         printfn "%s" (Resources.Strings.``Face rectangle:\t\t{0}`` rect)
 
-                    let k = min rect.Width rect.Height / 14 |> toOddNumber |> max 1
+                    let k: int = ksizef rect.Width rect.Height
+                    let rectInflated: Rectangle = Rectangle.Inflate(rect, k, k)
+                    use mask: Mat = maskf k (Size(rectInflated.Width, rectInflated.Height))
 
-                    let inflateAmount: int =
-                        let smallest = smallestGap matRect rect |> max 0
-                        if smallest > k then k else smallest
+                    let rectClamped: Rectangle =
+                        let top = Math.Clamp(rectInflated.Top, matRect.Top, matRect.Bottom)
+                        let bottom = Math.Clamp(rectInflated.Bottom, matRect.Top, matRect.Bottom)
+                        let left = Math.Clamp(rectInflated.Left, matRect.Left, matRect.Right)
+                        let right = Math.Clamp(rectInflated.Right, matRect.Left, matRect.Right)
+                        Rectangle(left, top, right - left, bottom - top)
 
-                    let rect': System.Drawing.Rectangle =
-                        Rectangle.Inflate(rect, inflateAmount, inflateAmount)
+                    let rectForMat: Rectangle =
+                        let x = rectClamped.Left - rectInflated.Left
+                        let y = rectClamped.Top - rectInflated.Top
+                        let width = rectClamped.Width
+                        let height = rectClamped.Height
+                        Rectangle(x, y, width, height)
 
-                    use facialArea: Mat = mat.Item(rect'.Top, rect'.Bottom, rect'.Left, rect'.Right)
-                    use facialAreaBlurred: Mat = gaussianBlurCircularEdge facialArea k (k * 10 + 1)
-                    mat.Item(rect'.Top, rect'.Bottom, rect'.Left, rect'.Right) <- facialAreaBlurred
+                    use faceMask: Mat =
+                        mask.Item(rectForMat.Top, rectForMat.Bottom, rectForMat.Left, rectForMat.Right)
+
+                    use facialArea: Mat =
+                        mat.Item(rectClamped.Top, rectClamped.Bottom, rectClamped.Left, rectClamped.Right)
+
+                    use facialAreaBlurred: Mat =
+                        gaussianBlurCircularEdge faceMask facialArea (k * 10 + 1)
+
+                    mat.Item(rectClamped.Top, rectClamped.Bottom, rectClamped.Left, rectClamped.Right) <-
+                        facialAreaBlurred
 
                 // Cv2.ImShow("Result", mat)
                 // Cv2.WaitKey 0 |> ignore

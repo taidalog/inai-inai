@@ -47,10 +47,3 @@ module Utility =
                 [ ".BMP"; ".GIF"; ".EXIF"; ".JPG"; ".JPEG"; ".JPE"; ".PNG"; ".TIFF"; ".TIF" ]
 
     let toOddNumber (n: int) : int = n + if n % 2 = 0 then 1 else 0
-
-    let smallestGap (outerRect: System.Drawing.Rectangle) (innerRect: System.Drawing.Rectangle) : int =
-        List.min
-            [ abs (outerRect.Top - innerRect.Top)
-              abs (outerRect.Bottom - innerRect.Bottom)
-              abs (outerRect.Left - innerRect.Left)
-              abs (outerRect.Right - innerRect.Right) ]
