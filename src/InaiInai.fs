@@ -190,7 +190,7 @@ module InaiInai =
 
     [<RequireQualifiedAccess>]
     module State =
-        let empty =
+        let empty: State =
             { paths = Array.empty
               newpaths = Array.empty
               isOverDragZone = false }
