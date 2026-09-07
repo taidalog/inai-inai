@@ -18,160 +18,6 @@ namespace InaiInai
 
 open System
 open System.IO
-open Avalonia
-open Avalonia.FuncUI.DSL
-open Avalonia.Layout
-open Avalonia.Controls
-open Avalonia.Input
-open Avalonia.Media
-open Avalonia.Styling
-open Elmish
-
-module DragDrop =
-
-    type State =
-        { paths: string array
-          newpaths: string array
-          isOverDragZone: bool }
-
-    [<RequireQualifiedAccess>]
-    module State =
-        let empty =
-            { paths = Array.empty
-              newpaths = Array.empty
-              isOverDragZone = false }
-
-        let init () : State * Cmd<'a> = empty, Cmd.none
-
-    type Msg =
-        | DragOver
-        | DragEnter
-        | DragLeave
-        | Drop of string array
-        | Completed of string array
-
-    let newName (destinationPathName: string) (path: string) : string =
-        let fi = FileInfo path
-        Path.Join [| fi.DirectoryName; destinationPathName; fi.Name |]
-
-    let copyFile (path: string) (newPath: string) : unit =
-        let fi = FileInfo newPath
-
-        if not (Directory.Exists fi.DirectoryName) then
-            Directory.CreateDirectory fi.DirectoryName |> ignore
-
-        File.Copy(path, newPath)
-
-    let copyFilesAsync (paths: string array) : Async<string array> =
-        async {
-            let newPaths = paths |> Array.map (newName "output")
-            (paths, newPaths) ||> Array.iter2 copyFile
-            return newPaths
-        }
-
-    let update (msg: Msg) (state: State) : State * Cmd<Msg> =
-        match msg with
-        | DragOver -> { state with isOverDragZone = true }, Cmd.none
-        | DragEnter -> { state with isOverDragZone = true }, Cmd.none
-        | DragLeave -> { state with isOverDragZone = false }, Cmd.none
-        | Drop(paths: string array) ->
-            let cmd: Cmd<Msg> = Cmd.OfAsync.perform copyFilesAsync paths Msg.Completed
-            { state with paths = paths }, cmd
-        | Completed(newpaths: string array) ->
-            { state with
-                newpaths = newpaths
-                isOverDragZone = false },
-            Cmd.none
-
-    let getPaths (e: DragEventArgs) : string array =
-        use d: IDataTransfer = e.DataTransfer
-
-        if d.Contains DataFormat.File then
-            let files: Avalonia.Platform.Storage.IStorageItem array = d.TryGetFiles()
-
-            if files <> null then
-                files |> Seq.map (fun x -> x.Path.LocalPath) |> Seq.toArray
-            else
-                Array.empty
-        else
-            Array.empty
-
-    let isDarkMode: bool =
-        match Application.Current with
-        | null -> false
-        | app -> app.ActualThemeVariant = ThemeVariant.Dark
-
-    let backgroundColor (isOverDragZone: bool) (isDarkMode: bool) : IBrush =
-        match isOverDragZone, isDarkMode with
-        | true, true -> SolidColorBrush(Color.FromArgb(90uy, 101uy, 162uy, 172uy))
-        | true, false -> SolidColorBrush(Color.FromRgb(193uy, 223uy, 227uy))
-        | false, _ -> Brushes.Transparent
-
-    let droppedText (s: State) : string =
-        let pathCount = Array.length s.paths
-
-        if pathCount = 0 then
-            "Drop files here"
-        else
-            Array.concat [ [| $"%d{pathCount} file(s) are dropped" |]; Array.sort s.paths ]
-            |> String.concat Environment.NewLine
-
-    let view (state: State) (dispatch: Msg -> unit) : Avalonia.FuncUI.Types.IView<DockPanel> =
-
-        DockPanel.create
-            [ DockPanel.children
-                  [ Border.create
-                        [ Border.dock Dock.Top
-                          Border.padding 16.0
-                          Border.margin 8.0
-
-                          // Border.background is necessary for DragDrop.
-                          Border.background (backgroundColor state.isOverDragZone isDarkMode)
-
-                          // Border.border is NOT necessary for DragDrop.
-                          Border.borderBrush (SolidColorBrush Colors.Gray)
-                          Border.borderThickness 1.0
-                          Border.cornerRadius 8.0
-                          Border.minHeight 180.0
-                          Border.isHitTestVisible true
-
-                          Control.allowDrop true
-
-                          Control.onDragOver (fun (e: DragEventArgs) ->
-                              if e.DataTransfer.Contains DataFormat.File then
-                                  e.DragEffects <- DragDropEffects.Copy
-                              else
-                                  e.DragEffects <- DragDropEffects.None
-
-                              Msg.DragOver |> dispatch
-                              e.Handled <- true)
-
-                          Control.onDragEnter (fun (e: DragEventArgs) ->
-                              Msg.DragEnter |> dispatch
-                              e.Handled <- true)
-
-                          Control.onDragLeave (fun (e: DragEventArgs) ->
-                              Msg.DragLeave |> dispatch
-                              e.Handled <- true)
-
-                          Control.onDrop (fun (e: DragEventArgs) ->
-                              getPaths e |> Msg.Drop |> dispatch
-                              e.Handled <- true)
-
-                          Border.child (
-                              TextBlock.create
-                                  [ TextBlock.textWrapping TextWrapping.Wrap
-                                    if Array.length state.paths > 0 then
-                                        TextBlock.verticalAlignment VerticalAlignment.Top
-                                        TextBlock.horizontalAlignment HorizontalAlignment.Left
-                                    else
-                                        TextBlock.verticalAlignment VerticalAlignment.Center
-                                        TextBlock.horizontalAlignment HorizontalAlignment.Center
-                                    TextBlock.text (droppedText state) ]
-                          ) ] ] ]
-
-// open System
-// open System.IO
 // open System.Diagnostics
 // open System.Reflection
 // open System.Text
@@ -180,6 +26,14 @@ module DragDrop =
 // open Utility
 // open Image
 // open Path
+open Avalonia
+open Avalonia.FuncUI.DSL
+open Avalonia.Layout
+open Avalonia.Controls
+open Avalonia.Input
+open Avalonia.Media
+open Avalonia.Styling
+open Elmish
 
 // module Main =
 //     [<EntryPoint>]
@@ -328,3 +182,146 @@ module DragDrop =
 //                                 printfn "%s" Resources.Strings.``Press any key to exit...``
 //                                 Console.ReadKey() |> ignore
 //                                 0
+
+module DragDrop =
+
+    type State =
+        { paths: string array
+          newpaths: string array
+          isOverDragZone: bool }
+
+    [<RequireQualifiedAccess>]
+    module State =
+        let empty =
+            { paths = Array.empty
+              newpaths = Array.empty
+              isOverDragZone = false }
+
+        let init () : State * Cmd<'a> = empty, Cmd.none
+
+    type Msg =
+        | DragOver
+        | DragEnter
+        | DragLeave
+        | Drop of string array
+        | Completed of string array
+
+    let newName (destinationPathName: string) (path: string) : string =
+        let fi = FileInfo path
+        Path.Join [| fi.DirectoryName; destinationPathName; fi.Name |]
+
+    let copyFile (path: string) (newPath: string) : unit =
+        let fi = FileInfo newPath
+
+        if not (Directory.Exists fi.DirectoryName) then
+            Directory.CreateDirectory fi.DirectoryName |> ignore
+
+        File.Copy(path, newPath)
+
+    let copyFilesAsync (paths: string array) : Async<string array> =
+        async {
+            let newPaths = paths |> Array.map (newName "output")
+            (paths, newPaths) ||> Array.iter2 copyFile
+            return newPaths
+        }
+
+    let update (msg: Msg) (state: State) : State * Cmd<Msg> =
+        match msg with
+        | DragOver -> { state with isOverDragZone = true }, Cmd.none
+        | DragEnter -> { state with isOverDragZone = true }, Cmd.none
+        | DragLeave -> { state with isOverDragZone = false }, Cmd.none
+        | Drop(paths: string array) ->
+            let cmd: Cmd<Msg> = Cmd.OfAsync.perform copyFilesAsync paths Msg.Completed
+            { state with paths = paths }, cmd
+        | Completed(newpaths: string array) ->
+            { state with
+                newpaths = newpaths
+                isOverDragZone = false },
+            Cmd.none
+
+    let getPaths (e: DragEventArgs) : string array =
+        use d: IDataTransfer = e.DataTransfer
+
+        if d.Contains DataFormat.File then
+            let files: Avalonia.Platform.Storage.IStorageItem array = d.TryGetFiles()
+
+            if files <> null then
+                files |> Seq.map (fun x -> x.Path.LocalPath) |> Seq.toArray
+            else
+                Array.empty
+        else
+            Array.empty
+
+    let isDarkMode: bool =
+        match Application.Current with
+        | null -> false
+        | app -> app.ActualThemeVariant = ThemeVariant.Dark
+
+    let backgroundColor (isOverDragZone: bool) (isDarkMode: bool) : IBrush =
+        match isOverDragZone, isDarkMode with
+        | true, true -> SolidColorBrush(Color.FromArgb(90uy, 101uy, 162uy, 172uy))
+        | true, false -> SolidColorBrush(Color.FromRgb(193uy, 223uy, 227uy))
+        | false, _ -> Brushes.Transparent
+
+    let droppedText (s: State) : string =
+        let pathCount = Array.length s.paths
+
+        if pathCount = 0 then
+            "Drop files here"
+        else
+            Array.concat [ [| $"%d{pathCount} file(s) are dropped" |]; Array.sort s.paths ]
+            |> String.concat Environment.NewLine
+
+    let view (state: State) (dispatch: Msg -> unit) : Avalonia.FuncUI.Types.IView<DockPanel> =
+
+        DockPanel.create
+            [ DockPanel.children
+                  [ Border.create
+                        [ Border.dock Dock.Top
+                          Border.padding 16.0
+                          Border.margin 8.0
+
+                          // Border.background is necessary for DragDrop.
+                          Border.background (backgroundColor state.isOverDragZone isDarkMode)
+
+                          // Border.border is NOT necessary for DragDrop.
+                          Border.borderBrush (SolidColorBrush Colors.Gray)
+                          Border.borderThickness 1.0
+                          Border.cornerRadius 8.0
+                          Border.minHeight 180.0
+                          Border.isHitTestVisible true
+
+                          Control.allowDrop true
+
+                          Control.onDragOver (fun (e: DragEventArgs) ->
+                              if e.DataTransfer.Contains DataFormat.File then
+                                  e.DragEffects <- DragDropEffects.Copy
+                              else
+                                  e.DragEffects <- DragDropEffects.None
+
+                              Msg.DragOver |> dispatch
+                              e.Handled <- true)
+
+                          Control.onDragEnter (fun (e: DragEventArgs) ->
+                              Msg.DragEnter |> dispatch
+                              e.Handled <- true)
+
+                          Control.onDragLeave (fun (e: DragEventArgs) ->
+                              Msg.DragLeave |> dispatch
+                              e.Handled <- true)
+
+                          Control.onDrop (fun (e: DragEventArgs) ->
+                              getPaths e |> Msg.Drop |> dispatch
+                              e.Handled <- true)
+
+                          Border.child (
+                              TextBlock.create
+                                  [ TextBlock.textWrapping TextWrapping.Wrap
+                                    if Array.length state.paths > 0 then
+                                        TextBlock.verticalAlignment VerticalAlignment.Top
+                                        TextBlock.horizontalAlignment HorizontalAlignment.Left
+                                    else
+                                        TextBlock.verticalAlignment VerticalAlignment.Center
+                                        TextBlock.horizontalAlignment HorizontalAlignment.Center
+                                    TextBlock.text (droppedText state) ]
+                          ) ] ] ]
