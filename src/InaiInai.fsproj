@@ -2,9 +2,10 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <OutputType Condition="$(RuntimeIdentifier.StartsWith('win'))">WinExe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>inai-inai</AssemblyName>
-    <ApplicationIcon>..\assets\icon.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
 
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
 
@@ -25,6 +26,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <AvaloniaResource Include="Assets\icon.ico" />
     <Compile Include="Utility.fs" />
     <Compile Include="Resources.fs" />
     <Compile Include="Path.fs" />
@@ -32,6 +34,7 @@
     <Compile Include="Image.fs" />
     <Compile Include="Process.fs" />
     <Compile Include="InaiInai.fs" />
+    <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>
