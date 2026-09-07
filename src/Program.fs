@@ -38,7 +38,7 @@ type MainWindow() as this =
 
         base.Icon <- appIcon
 
-        Program.mkProgram DragDrop.State.init DragDrop.update DragDrop.view
+        Program.mkProgram InaiInai.State.init InaiInai.update InaiInai.view
         |> Program.withHost this
         |> Program.withConsoleTrace
         |> Program.runWithAvaloniaSyncDispatch ()
