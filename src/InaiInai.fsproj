@@ -29,6 +29,7 @@
     <AvaloniaResource Include="Assets\icon.ico" />
     <Compile Include="Utility.fs" />
     <Compile Include="Resources.fs" />
+    <Compile Include="FaceBlurResult.fs" />
     <Compile Include="Path.fs" />
     <Compile Include="Arguments.fs" />
     <Compile Include="Image.fs" />
