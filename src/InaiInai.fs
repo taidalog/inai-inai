@@ -185,6 +185,7 @@ module InaiInai =
 
     type State =
         { paths: string array
+          results: FaceBlurResult array
           newpaths: string array
           isOverDragZone: bool }
 
@@ -192,6 +193,7 @@ module InaiInai =
     module State =
         let empty: State =
             { paths = Array.empty
+              results = Array.empty
               newpaths = Array.empty
               isOverDragZone = false }
 
