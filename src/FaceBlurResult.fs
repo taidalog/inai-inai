@@ -18,11 +18,11 @@ namespace InaiInai
 
 open System
 open System.IO
-open System.Drawing
+open FaceONNX
 
 type FaceBlurResult =
     { Path: string
-      Faces: Rectangle array
+      Faces: FaceDetectionResult array
       DetectingSeconds: float
       Width: int
       Height: int
