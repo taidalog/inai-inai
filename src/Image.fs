@@ -112,14 +112,16 @@ module Image =
         (verbose: bool)
         (outputDirectory: DirectoryInfo)
         (fileInfo: FileInfo)
-        : Result<string * float, exn * string * string> =
+        : Result<FaceBlurResult, exn> =
         try
             printfn "%s" (Resources.Strings.``Detecting faces in:\t{0}`` fileInfo)
 
             if fileInfo.Exists = false then
-                let e = new FileNotFoundException()
+                let e =
+                    new FileNotFoundException($"%s{fileInfo.FullName} is not found.", fileInfo.Name)
+
                 printfn "Error:\t\t\t%s\n" e.Message
-                Error(e, $"%s{fileInfo.FullName} is not found.", fileInfo.FullName)
+                Error e
             else
                 let t0 = DateTime.Now
 
@@ -127,6 +129,8 @@ module Image =
                 let orientation: Imaging.PropertyItem option = getImageOrientationProperty bitmap
 
                 let faces: FaceDetectionResult array = faceDetector.Forward bitmap
+
+                let detectingSeconds = (DateTime.Now - t0).TotalSeconds
 
                 printfn
                     "%s"
@@ -138,6 +142,9 @@ module Image =
 
                 use mat: Mat = bitmap.ToMat()
                 let matRect: Rectangle = Rectangle(0, 0, mat.Width, mat.Height)
+
+                let w, h = mat.Width, mat.Height
+                let l = fileInfo.Length
 
                 printfn "%s" (Resources.Strings.``Image dimensions:\t{0} x {1} pixels`` mat.Width mat.Height)
                 printfn "%s" (Resources.Strings.``Image size:\t\t{0} MB`` $"{float fileInfo.Length / 1024. / 1024.:F2}")
@@ -184,6 +191,7 @@ module Image =
                 // Cv2.DestroyAllWindows()
                 )
 
+                let blurringSeconds = (DateTime.Now - t1).TotalSeconds
                 printfn "%s" (Resources.Strings.``Masking time:\t\t{0} seconds`` (DateTime.Now - t1).TotalSeconds)
 
                 let t2 = DateTime.Now
@@ -198,9 +206,9 @@ module Image =
                 let outputPath = Path.uniqueFileName outputDirectory fileInfo
 
                 match outputPath with
-                | Error(e, x, y) ->
+                | Error(e, _, _) ->
                     printfn "%s" (Resources.Strings.``Couldn't save image:\t{0}\n`` fileInfo.FullName)
-                    Error(e, x, y)
+                    Error e
                 | Ok(outputPath: string) ->
                     dstBitmap.Save outputPath
                     // Cv2.ImWrite(outputPath, mat) |> ignore
@@ -211,11 +219,21 @@ module Image =
                             outputPath
                             (DateTime.Now - t2).TotalSeconds)
 
-                    Ok(outputPath, (DateTime.Now - t2).TotalSeconds)
-        with
-        | :? FileNotFoundException as e ->
+                    let resultPath = outputPath
+                    let savingSeconds = (DateTime.Now - t2).TotalSeconds
+
+                    let res: FaceBlurResult =
+                        { Path = fileInfo.FullName
+                          Faces = faces
+                          DetectingSeconds = detectingSeconds
+                          Width = w
+                          Height = h
+                          Length = l
+                          BlurringSeconds = blurringSeconds
+                          ResultPath = resultPath
+                          SavingSeconds = savingSeconds }
+
+                    Ok res
+        with _ as e ->
             printfn "Error:\t\t\t%s\n" e.Message
-            Error(e, $"%s{e.FileName} is not found.", fileInfo.FullName)
-        | _ as e ->
-            printfn "Error:\t\t\t%s\n" e.Message
-            Error(e, "Unexpected error.", fileInfo.FullName)
+            Error e
