@@ -237,3 +237,17 @@ module Image =
         with _ as e ->
             printfn "Error:\t\t\t%s\n" e.Message
             Error e
+
+    let blurFacesAsync
+        (faceDetector: FaceDetector)
+        (verbose: bool)
+        (outputDirectory: DirectoryInfo)
+        (fileInfos: FileInfo array)
+        : Async<Result<FaceBlurResult, exn> array> =
+
+        let blurFaces' = blurFaces faceDetector verbose outputDirectory
+
+        async {
+            let results: Result<FaceBlurResult, exn> array = fileInfos |> Array.map blurFaces'
+            return results
+        }
