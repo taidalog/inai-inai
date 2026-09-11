@@ -44,7 +44,7 @@ module FaceBlurResult =
           ResultPath = String.Empty
           SavingSeconds = 0.0 }
 
-    let toString (x: FaceBlurResult) : string =
+    let toDisplayText (x: FaceBlurResult) : string =
         [ Resources.Strings.``Detecting faces in:\t{0}`` (FileInfo x.Path)
           Resources.Strings.``Detected face(s):\t{0} face(s), {1} seconds`` (Array.length x.Faces) x.DetectingSeconds
           Resources.Strings.``Image dimensions:\t{0} x {1} pixels`` x.Width x.Height
@@ -52,3 +52,8 @@ module FaceBlurResult =
           Resources.Strings.``Masking time:\t\t{0} seconds`` x.BlurringSeconds
           Resources.Strings.``Saved image:\t\t{0}, {1} seconds\n`` x.ResultPath x.SavingSeconds ]
         |> String.concat Environment.NewLine
+
+    let resultToDisplayText (x: Result<FaceBlurResult, exn>) =
+        match x with
+        | Ok v -> toDisplayText v
+        | Error e -> string e
