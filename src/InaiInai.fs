@@ -23,7 +23,7 @@ open System.IO
 // open System.Text
 // open FaceONNX
 // open Argu
-// open Utility
+open Utility
 // open Image
 // open Path
 open Avalonia
@@ -206,25 +206,6 @@ module InaiInai =
         | Drop of string array
         | Completed of string array
 
-    let newName (destinationPathName: string) (path: string) : string =
-        let fi = FileInfo path
-        Path.Join [| fi.DirectoryName; destinationPathName; fi.Name |]
-
-    let copyFile (path: string) (newPath: string) : unit =
-        let fi = FileInfo newPath
-
-        if not (Directory.Exists fi.DirectoryName) then
-            Directory.CreateDirectory fi.DirectoryName |> ignore
-
-        File.Copy(path, newPath)
-
-    let copyFilesAsync (paths: string array) : Async<string array> =
-        async {
-            let newPaths = paths |> Array.map (newName "output")
-            (paths, newPaths) ||> Array.iter2 copyFile
-            return newPaths
-        }
-
     let update (msg: Msg) (state: State) : State * Cmd<Msg> =
         match msg with
         | DragOver -> { state with isOverDragZone = true }, Cmd.none
@@ -238,30 +219,6 @@ module InaiInai =
                 newpaths = newpaths
                 isOverDragZone = false },
             Cmd.none
-
-    let getPaths (e: DragEventArgs) : string array =
-        use d: IDataTransfer = e.DataTransfer
-
-        if d.Contains DataFormat.File then
-            let files: Avalonia.Platform.Storage.IStorageItem array = d.TryGetFiles()
-
-            if files <> null then
-                files |> Seq.map (fun x -> x.Path.LocalPath) |> Seq.toArray
-            else
-                Array.empty
-        else
-            Array.empty
-
-    let isDarkMode: bool =
-        match Application.Current with
-        | null -> false
-        | app -> app.ActualThemeVariant = ThemeVariant.Dark
-
-    let backgroundColor (isOverDragZone: bool) (isDarkMode: bool) : IBrush =
-        match isOverDragZone, isDarkMode with
-        | true, true -> SolidColorBrush(Color.FromArgb(90uy, 101uy, 162uy, 172uy))
-        | true, false -> SolidColorBrush(Color.FromRgb(193uy, 223uy, 227uy))
-        | false, _ -> Brushes.Transparent
 
     let droppedText (s: State) : string =
         let pathCount = Array.length s.paths
