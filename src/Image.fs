@@ -107,12 +107,7 @@ module Image =
             output3Ch.CopyTo output
             output
 
-    let blurFaces
-        (faceDetector: FaceDetector)
-        (verbose: bool)
-        (outputDirectory: DirectoryInfo)
-        (fileInfo: FileInfo)
-        : Result<FaceBlurResult, exn> =
+    let blurFaces (verbose: bool) (outputDirectory: DirectoryInfo) (fileInfo: FileInfo) : Result<FaceBlurResult, exn> =
         try
             printfn "%s" (Resources.Strings.``Detecting faces in:\t{0}`` fileInfo)
 
@@ -128,6 +123,7 @@ module Image =
                 use bitmap: Bitmap = new Bitmap(fileInfo.FullName)
                 let orientation: Imaging.PropertyItem option = getImageOrientationProperty bitmap
 
+                use faceDetector: FaceDetector = new FaceDetector()
                 let faces: FaceDetectionResult array = faceDetector.Forward bitmap
 
                 let detectingSeconds = (DateTime.Now - t0).TotalSeconds
@@ -239,13 +235,12 @@ module Image =
             Error e
 
     let blurFacesAsync
-        (faceDetector: FaceDetector)
         (verbose: bool)
         (outputDirectory: DirectoryInfo)
         (fileInfos: FileInfo array)
         : Async<Result<FaceBlurResult, exn> array> =
 
-        let blurFaces' = blurFaces faceDetector verbose outputDirectory
+        let blurFaces' = blurFaces verbose outputDirectory
 
         async {
             let results: Result<FaceBlurResult, exn> array = fileInfos |> Array.map blurFaces'

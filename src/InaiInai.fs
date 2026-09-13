@@ -222,10 +222,8 @@ module InaiInai =
         | DragEnter -> { state with isOverDragZone = true }, Cmd.none
         | DragLeave -> { state with isOverDragZone = false }, Cmd.none
         | Drop(paths: string array) ->
-            use faceDetector: FaceDetector = new FaceDetector()
-
             let blurFacesAsync' =
-                blurFacesAsync faceDetector state.verbose (DirectoryInfo state.outputDirectory)
+                blurFacesAsync state.verbose (DirectoryInfo state.outputDirectory)
 
             let fileInfos: FileInfo array = paths |> Array.map FileInfo
             let cmd: Cmd<Msg> = Cmd.OfAsync.perform blurFacesAsync' fileInfos Msg.Completed
