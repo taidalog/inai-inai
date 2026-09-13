@@ -19,6 +19,7 @@ namespace InaiInai
 open System
 open System.IO
 open System.Diagnostics
+open System.Reflection
 
 open Avalonia
 open Avalonia.FuncUI.DSL
@@ -99,3 +100,14 @@ module Utility =
             (paths, newPaths) ||> Array.iter2 copyFile
             return newPaths
         }
+
+    let displayText (results: Result<FaceBlurResult, exn> array) =
+        if Array.length results = 0 then
+            Resources.Strings.``Drag and drop image files here.``
+        else
+            results
+            |> Array.map FaceBlurResult.resultToDisplayText
+            |> String.concat (String.replicate 2 Environment.NewLine)
+
+    let versionString =
+        Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion
