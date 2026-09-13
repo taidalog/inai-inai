@@ -240,15 +240,6 @@ module InaiInai =
                 isOverDragZone = false },
             Cmd.none
 
-    let droppedText (s: State) : string =
-        let pathCount = Array.length s.paths
-
-        if pathCount = 0 then
-            "Drop files here"
-        else
-            Array.concat [ [| $"%d{pathCount} file(s) are dropped" |]; Array.sort s.paths ]
-            |> String.concat Environment.NewLine
-
     let view (state: State) (dispatch: Msg -> unit) : Avalonia.FuncUI.Types.IView<DockPanel> =
 
         DockPanel.create

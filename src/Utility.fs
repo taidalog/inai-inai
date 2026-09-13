@@ -82,25 +82,6 @@ module Utility =
         else
             Array.empty
 
-    let newName (destinationPathName: string) (path: string) : string =
-        let fi = FileInfo path
-        Path.Join [| fi.DirectoryName; destinationPathName; fi.Name |]
-
-    let copyFile (path: string) (newPath: string) : unit =
-        let fi = FileInfo newPath
-
-        if not (Directory.Exists fi.DirectoryName) then
-            Directory.CreateDirectory fi.DirectoryName |> ignore
-
-        File.Copy(path, newPath)
-
-    let copyFilesAsync (paths: string array) : Async<string array> =
-        async {
-            let newPaths = paths |> Array.map (newName "output")
-            (paths, newPaths) ||> Array.iter2 copyFile
-            return newPaths
-        }
-
     let displayText (results: Result<FaceBlurResult, exn> array) =
         if Array.length results = 0 then
             Resources.Strings.``Drag and drop image files here.``
