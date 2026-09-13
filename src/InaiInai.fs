@@ -21,10 +21,10 @@ open System.IO
 // open System.Diagnostics
 // open System.Reflection
 // open System.Text
-// open FaceONNX
+open FaceONNX
 // open Argu
 open Utility
-// open Image
+open Image
 // open Path
 open Avalonia
 open Avalonia.FuncUI.DSL
@@ -184,27 +184,37 @@ module InaiInai =
     //                                 0
 
     type State =
-        { paths: string array
-          results: FaceBlurResult array
-          newpaths: string array
-          isOverDragZone: bool }
+        { workingDirectory: string
+          inputDirectory: string
+          outputDirectory: string
+          verbose: bool
+          isOverDragZone: bool
+          paths: string array
+          results: Result<FaceBlurResult, exn> array }
 
     [<RequireQualifiedAccess>]
     module State =
         let empty: State =
-            { paths = Array.empty
-              results = Array.empty
-              newpaths = Array.empty
-              isOverDragZone = false }
+            { workingDirectory = String.Empty
+              inputDirectory = String.Empty
+              outputDirectory = String.Empty
+              verbose = false
+              isOverDragZone = false
+              paths = Array.empty
+              results = Array.empty }
 
-        let init () : State * Cmd<'a> = empty, Cmd.none
+        let init () : State * Cmd<'a> =
+            { empty with
+                workingDirectory = Path.workingDirectory
+                outputDirectory = Path.Join [| Path.workingDirectory; "output" |] },
+            Cmd.none
 
     type Msg =
         | DragOver
         | DragEnter
         | DragLeave
-        | Drop of string array
-        | Completed of string array
+        | Drop of paths: string array
+        | Completed of results: Result<FaceBlurResult, exn> array
 
     let update (msg: Msg) (state: State) : State * Cmd<Msg> =
         match msg with
@@ -212,11 +222,21 @@ module InaiInai =
         | DragEnter -> { state with isOverDragZone = true }, Cmd.none
         | DragLeave -> { state with isOverDragZone = false }, Cmd.none
         | Drop(paths: string array) ->
-            let cmd: Cmd<Msg> = Cmd.OfAsync.perform copyFilesAsync paths Msg.Completed
-            { state with paths = paths }, cmd
-        | Completed(newpaths: string array) ->
+            use faceDetector: FaceDetector = new FaceDetector()
+
+            let blurFacesAsync' =
+                blurFacesAsync faceDetector state.verbose (DirectoryInfo state.outputDirectory)
+
+            let fileInfos: FileInfo array = paths |> Array.map FileInfo
+            let cmd: Cmd<Msg> = Cmd.OfAsync.perform blurFacesAsync' fileInfos Msg.Completed
+
             { state with
-                newpaths = newpaths
+                paths = paths
+                isOverDragZone = false },
+            cmd
+        | Completed(results: Result<FaceBlurResult, exn> array) ->
+            { state with
+                results = results
                 isOverDragZone = false },
             Cmd.none
 
@@ -280,5 +300,5 @@ module InaiInai =
                                     else
                                         TextBlock.verticalAlignment VerticalAlignment.Center
                                         TextBlock.horizontalAlignment HorizontalAlignment.Center
-                                    TextBlock.text (droppedText state) ]
+                                    TextBlock.text (displayText state.results) ]
                           ) ] ] ]
