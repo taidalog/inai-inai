@@ -3,6 +3,10 @@
     <value>Error: Parent PID not found.</value>
   </data>
 
+  <data name="Drag and drop image files here." xml:space="preserve">
+    <value>Drag and drop image files here.</value>
+  </data>
+
   <data name="Error: The directory {0} does not exist." xml:space="preserve">
     <value>Error: The directory {0} does not exist.</value>
   </data>

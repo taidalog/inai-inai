@@ -3,6 +3,10 @@
     <value>Error: 親プロセスの PID が見つかりませんでした。</value>
   </data>
 
+  <data name="Drag and drop image files here." xml:space="preserve">
+    <value>ここに画像ファイルをドラッグ&ドロップ</value>
+  </data>
+
   <data name="Error: The directory {0} does not exist." xml:space="preserve">
     <value>Error: {0} フォルダが存在しません。</value>
   </data>
