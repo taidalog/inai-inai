@@ -4,7 +4,7 @@
   </data>
 
   <data name="Drag and drop image files here." xml:space="preserve">
-    <value>ここに画像ファイルをドラッグ&ドロップ</value>
+    <value>ここに画像ファイルをドラッグ&amp;ドロップ</value>
   </data>
 
   <data name="Error: The directory {0} does not exist." xml:space="preserve">
