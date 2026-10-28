@@ -281,13 +281,23 @@ module InaiInai =
                               e.Handled <- true)
 
                           Border.child (
-                              TextBlock.create
-                                  [ TextBlock.textWrapping TextWrapping.Wrap
-                                    if Array.length state.paths > 0 then
-                                        TextBlock.verticalAlignment VerticalAlignment.Top
-                                        TextBlock.horizontalAlignment HorizontalAlignment.Left
-                                    else
+                              if Array.isEmpty state.paths then
+                                  TextBlock.create
+                                      [ TextBlock.textWrapping TextWrapping.Wrap
                                         TextBlock.verticalAlignment VerticalAlignment.Center
                                         TextBlock.horizontalAlignment HorizontalAlignment.Center
-                                    TextBlock.text (displayText state.results) ]
+                                        TextBlock.text Resources.Strings.``Drag and drop image files here.`` ]
+                                  :> Avalonia.FuncUI.Types.IView
+                              else
+                                  ScrollViewer.create
+                                      [ ScrollViewer.content (
+                                            ItemsControl.create
+                                                [ ItemsControl.viewItems
+                                                      [ for x in state.results do
+                                                            TextBlock.create
+                                                                [ TextBlock.textWrapping TextWrapping.Wrap
+                                                                  TextBlock.padding 8.0
+                                                                  TextBlock.text (FaceBlurResult.resultToDisplayText x) ] ] ]
+                                        ) ]
+                                  :> Avalonia.FuncUI.Types.IView
                           ) ] ] ]
