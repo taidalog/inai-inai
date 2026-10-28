@@ -18,159 +18,286 @@ namespace InaiInai
 
 open System
 open System.IO
-open System.Diagnostics
-open System.Reflection
-open System.Text
+// open System.Diagnostics
+// open System.Reflection
+// open System.Text
 open FaceONNX
-open Argu
+// open Argu
 open Utility
 open Image
-open Path
+// open Path
+open Avalonia
+open Avalonia.FuncUI.DSL
+open Avalonia.Layout
+open Avalonia.Controls
+open Avalonia.Input
+open Avalonia.Media
+open Avalonia.Styling
+open Elmish
 
-module Main =
-    [<EntryPoint>]
-    let main (args: string array) : int =
-        Console.OutputEncoding <- Encoding.UTF8
+module InaiInai =
+    //     [<EntryPoint>]
+    //     let main (args: string array) : int =
+    //         Console.OutputEncoding <- Encoding.UTF8
 
-        let errorHandler =
-            ProcessExiter(
-                colorizer =
-                    function
-                    | ErrorCode.HelpText -> None
-                    | _ -> Some ConsoleColor.Red
-            )
+    //         let errorHandler =
+    //             ProcessExiter(
+    //                 colorizer =
+    //                     function
+    //                     | ErrorCode.HelpText -> None
+    //                     | _ -> Some ConsoleColor.Red
+    //             )
 
-        let parser: ArgumentParser<Arguments> =
-            ArgumentParser.Create<Arguments>(programName = "inai-inai", errorHandler = errorHandler)
+    //         let parser: ArgumentParser<Arguments> =
+    //             ArgumentParser.Create<Arguments>(programName = "inai-inai", errorHandler = errorHandler)
 
-        let results: ParseResults<Arguments> = parser.Parse args
+    //         let results: ParseResults<Arguments> = parser.Parse args
 
-        let versionString =
-            Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion
+    //         let versionString =
+    //             Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion
 
-        let version = results.Contains Arguments.Version
+    //         let version = results.Contains Arguments.Version
 
-        if version then
-            printfn "%s" versionString
-            0
-        else
-            printfn "inai-inai version %s\n" versionString
+    //         if version then
+    //             printfn "%s" versionString
+    //             0
+    //         else
+    //             printfn "inai-inai version %s\n" versionString
 
-            let pid: int =
-                use p = Process.GetCurrentProcess()
-                p.Id
+    //             let pid: int =
+    //                 use p = Process.GetCurrentProcess()
+    //                 p.Id
 
-            match Process.getParentPid pid with
-            | None ->
-                printfn "%s" Resources.Strings.``Error: Parent PID not found.``
-                2
-            | Some ppid ->
-                let paths: string list = results.GetResult(Paths, defaultValue = [])
+    //             match Process.getParentPid pid with
+    //             | None ->
+    //                 printfn "%s" Resources.Strings.``Error: Parent PID not found.``
+    //                 2
+    //             | Some ppid ->
+    //                 let paths: string list = results.GetResult(Paths, defaultValue = [])
 
-                let verbose = results.Contains Verbose
+    //                 let verbose = results.Contains Verbose
 
-                let isDnD = Utility.isDragAndDropped ppid (Array.length args)
+    //                 let isDnD = Utility.isDragAndDropped ppid (Array.length args)
 
-                let workingDirectory =
-                    if isDnD then
-                        AppContext.BaseDirectory
-                    else
-                        Environment.CurrentDirectory
+    //                 let workingDirectory =
+    //                     if isDnD then
+    //                         AppContext.BaseDirectory
+    //                     else
+    //                         Environment.CurrentDirectory
 
-                let outputDirectoryInfo =
-                    let outputDirectory: string =
-                        results.GetResult(Output_Directory, defaultValue = "output")
+    //                 let outputDirectoryInfo =
+    //                     let outputDirectory: string =
+    //                         results.GetResult(Output_Directory, defaultValue = "output")
 
-                    // Path.GetFullPath(outputDirectory, workingDirectory) |> DirectoryInfo
-                    Path.getFullPath workingDirectory outputDirectory |> Result.map DirectoryInfo
+    //                     // Path.GetFullPath(outputDirectory, workingDirectory) |> DirectoryInfo
+    //                     Path.getFullPath workingDirectory outputDirectory |> Result.map DirectoryInfo
 
-                let inputDirectoryInfo =
-                    let inputDirectory: string =
-                        results.GetResult(Input_Directory, defaultValue = "input")
+    //                 let inputDirectoryInfo =
+    //                     let inputDirectory: string =
+    //                         results.GetResult(Input_Directory, defaultValue = "input")
 
-                    // Path.GetFullPath(inputDirectory, workingDirectory) |> DirectoryInfo
-                    Path.getFullPath workingDirectory inputDirectory |> Result.map DirectoryInfo
+    //                     // Path.GetFullPath(inputDirectory, workingDirectory) |> DirectoryInfo
+    //                     Path.getFullPath workingDirectory inputDirectory |> Result.map DirectoryInfo
 
-                match outputDirectoryInfo, inputDirectoryInfo with
-                | Error(e, msg, filename), _ ->
-                    printfn "Error:\t\t\t%s\n%s\n" filename msg
-                    1
-                | _, Error(e, msg, filename) ->
-                    printfn "Error:\t\t\t%s\n%s\n" filename msg
-                    1
-                | Ok outputDirectoryInfo, Ok inputDirectoryInfo ->
-                    if not isDnD && List.length paths = 0 && not inputDirectoryInfo.Exists then
-                        printfn "%s" (Resources.Strings.``Error: The directory {0} does not exist.`` inputDirectoryInfo)
+    //                 match outputDirectoryInfo, inputDirectoryInfo with
+    //                 | Error(e, msg, filename), _ ->
+    //                     printfn "Error:\t\t\t%s\n%s\n" filename msg
+    //                     1
+    //                 | _, Error(e, msg, filename) ->
+    //                     printfn "Error:\t\t\t%s\n%s\n" filename msg
+    //                     1
+    //                 | Ok outputDirectoryInfo, Ok inputDirectoryInfo ->
+    //                     if not isDnD && List.length paths = 0 && not inputDirectoryInfo.Exists then
+    //                         printfn "%s" (Resources.Strings.``Error: The directory {0} does not exist.`` inputDirectoryInfo)
 
-                        printfn
-                            "%s"
-                            (Resources.Strings.``Create {0}, add image files, and run the program again.``
-                                inputDirectoryInfo)
+    //                         printfn
+    //                             "%s"
+    //                             (Resources.Strings.``Create {0}, add image files, and run the program again.``
+    //                                 inputDirectoryInfo)
 
-                        printfn "%s" Resources.Strings.``Press any key to exit...``
-                        Console.ReadKey() |> ignore
-                        1
-                    else
-                        let files: string array =
-                            if List.length paths > 0 then
-                                paths |> List.toArray
-                            else
-                                Directory.GetFiles(inputDirectoryInfo.FullName, "*.*")
+    //                         printfn "%s" Resources.Strings.``Press any key to exit...``
+    //                         Console.ReadKey() |> ignore
+    //                         1
+    //                     else
+    //                         let files: string array =
+    //                             if List.length paths > 0 then
+    //                                 paths |> List.toArray
+    //                             else
+    //                                 Directory.GetFiles(inputDirectoryInfo.FullName, "*.*")
 
-                        if Array.length files = 0 && not inputDirectoryInfo.Exists then
-                            printfn
-                                "%s"
-                                (Resources.Strings.``Error: The directory {0} does not exist.`` inputDirectoryInfo)
+    //                         if Array.length files = 0 && not inputDirectoryInfo.Exists then
+    //                             printfn
+    //                                 "%s"
+    //                                 (Resources.Strings.``Error: The directory {0} does not exist.`` inputDirectoryInfo)
 
-                            printfn
-                                "%s"
-                                (Resources.Strings.``Create {0}, add image files, and run the program again.``
-                                    inputDirectoryInfo)
+    //                             printfn
+    //                                 "%s"
+    //                                 (Resources.Strings.``Create {0}, add image files, and run the program again.``
+    //                                     inputDirectoryInfo)
 
-                            printfn "%s" Resources.Strings.``Press any key to exit...``
-                            Console.ReadKey() |> ignore
-                            1
-                        else
+    //                             printfn "%s" Resources.Strings.``Press any key to exit...``
+    //                             Console.ReadKey() |> ignore
+    //                             1
+    //                         else
 
-                            printfn "%s" (Resources.Strings.``Processing {0} image(s)...\n`` (Array.length files))
+    //                             printfn "%s" (Resources.Strings.``Processing {0} image(s)...\n`` (Array.length files))
 
-                            use faceDetector: FaceDetector = new FaceDetector()
+    //                             use faceDetector: FaceDetector = new FaceDetector()
 
-                            let fileInfos: Result<FileInfo, (exn * string * string)> array =
-                                files
-                                |> Array.map (Path.getFullPath workingDirectory)
-                                |> Array.filter (fun x ->
-                                    match x with
-                                    | Ok v -> isSupportedFileFormat v
-                                    | Error _ -> false)
-                                |> Array.filter (fun x ->
-                                    match x with
-                                    | Ok v -> Path.Exists v
-                                    | Error _ -> false)
-                                |> Array.map (Result.bind tryFileInfo)
+    //                             let fileInfos: Result<FileInfo, (exn * string * string)> array =
+    //                                 files
+    //                                 |> Array.map (Path.getFullPath workingDirectory)
+    //                                 |> Array.filter (fun x ->
+    //                                     match x with
+    //                                     | Ok v -> isSupportedFileFormat v
+    //                                     | Error _ -> false)
+    //                                 |> Array.filter (fun x ->
+    //                                     match x with
+    //                                     | Ok v -> Path.Exists v
+    //                                     | Error _ -> false)
+    //                                 |> Array.map (Result.bind tryFileInfo)
 
-                            let processed =
-                                fileInfos
-                                |> Array.map (Result.bind (blurFaces faceDetector verbose outputDirectoryInfo))
+    //                             let processed =
+    //                                 fileInfos
+    //                                 |> Array.map (Result.bind (blurFaces faceDetector verbose outputDirectoryInfo))
 
-                            processed
-                            |> Array.iter (fun (x: Result<(string * float), (exn * string * string)>) ->
-                                match x with
-                                | Ok _ -> ()
-                                | Error(e, msg, filename) -> printfn "Error:\t\t\t%s\n%s\n" filename msg)
+    //                             processed
+    //                             |> Array.iter (fun (x: Result<(string * float), (exn * string * string)>) ->
+    //                                 match x with
+    //                                 | Ok _ -> ()
+    //                                 | Error(e, msg, filename) -> printfn "Error:\t\t\t%s\n%s\n" filename msg)
 
-                            if Array.length processed > 0 then
-                                printfn "%s" Resources.Strings.``Press any key to exit...``
-                                Console.ReadKey() |> ignore
-                                0
-                            else
-                                printfn "%s" Resources.Strings.``No image files were found.``
+    //                             if Array.length processed > 0 then
+    //                                 printfn "%s" Resources.Strings.``Press any key to exit...``
+    //                                 Console.ReadKey() |> ignore
+    //                                 0
+    //                             else
+    //                                 printfn "%s" Resources.Strings.``No image files were found.``
 
-                                printfn
-                                    "%s"
-                                    (Resources.Strings.``Place image files in {0} and run the program again.``
-                                        inputDirectoryInfo)
+    //                                 printfn
+    //                                     "%s"
+    //                                     (Resources.Strings.``Place image files in {0} and run the program again.``
+    //                                         inputDirectoryInfo)
 
-                                printfn "%s" Resources.Strings.``Press any key to exit...``
-                                Console.ReadKey() |> ignore
-                                0
+    //                                 printfn "%s" Resources.Strings.``Press any key to exit...``
+    //                                 Console.ReadKey() |> ignore
+    //                                 0
+
+    type State =
+        { workingDirectory: string
+          inputDirectory: string
+          outputDirectory: string
+          verbose: bool
+          isOverDragZone: bool
+          paths: string array
+          results: Result<FaceBlurResult, exn> array }
+
+    type Msg =
+        | DragOver
+        | DragEnter
+        | DragLeave
+        | Drop of paths: string array
+        | Completed of results: Result<FaceBlurResult, exn> array
+
+    [<RequireQualifiedAccess>]
+    module State =
+        let empty: State =
+            { workingDirectory = String.Empty
+              inputDirectory = String.Empty
+              outputDirectory = String.Empty
+              verbose = false
+              isOverDragZone = false
+              paths = Array.empty
+              results = Array.empty }
+
+        let init () : State * Cmd<Msg> =
+            { empty with
+                workingDirectory = Path.workingDirectory
+                outputDirectory = Path.Join [| Path.workingDirectory; "output" |] },
+            Cmd.none
+
+    let update (msg: Msg) (state: State) : State * Cmd<Msg> =
+        match msg with
+        | DragOver -> { state with isOverDragZone = true }, Cmd.none
+        | DragEnter -> { state with isOverDragZone = true }, Cmd.none
+        | DragLeave -> { state with isOverDragZone = false }, Cmd.none
+        | Drop(paths: string array) ->
+            let blurFacesAsync' =
+                blurFacesAsync state.verbose (DirectoryInfo state.outputDirectory)
+
+            let fileInfos: FileInfo array = paths |> Array.map FileInfo
+            let cmd: Cmd<Msg> = Cmd.OfAsync.perform blurFacesAsync' fileInfos Msg.Completed
+
+            { state with
+                paths = paths
+                isOverDragZone = false },
+            cmd
+        | Completed(results: Result<FaceBlurResult, exn> array) ->
+            { state with
+                results = results
+                isOverDragZone = false },
+            Cmd.none
+
+    let view (state: State) (dispatch: Msg -> unit) : Avalonia.FuncUI.Types.IView<DockPanel> =
+
+        DockPanel.create
+            [ DockPanel.children
+                  [ Border.create
+                        [ Border.dock Dock.Top
+                          Border.padding 16.0
+                          Border.margin 8.0
+
+                          // Border.background is necessary for DragDrop.
+                          Border.background (backgroundColor state.isOverDragZone isDarkMode)
+
+                          // Border.border is NOT necessary for DragDrop.
+                          Border.borderBrush (SolidColorBrush Colors.Gray)
+                          Border.borderThickness 1.0
+                          Border.cornerRadius 8.0
+                          Border.minHeight 180.0
+                          Border.isHitTestVisible true
+
+                          Control.allowDrop true
+
+                          Control.onDragOver (fun (e: DragEventArgs) ->
+                              if e.DataTransfer.Contains DataFormat.File then
+                                  e.DragEffects <- DragDropEffects.Copy
+                              else
+                                  e.DragEffects <- DragDropEffects.None
+
+                              Msg.DragOver |> dispatch
+                              e.Handled <- true)
+
+                          Control.onDragEnter (fun (e: DragEventArgs) ->
+                              Msg.DragEnter |> dispatch
+                              e.Handled <- true)
+
+                          Control.onDragLeave (fun (e: DragEventArgs) ->
+                              Msg.DragLeave |> dispatch
+                              e.Handled <- true)
+
+                          Control.onDrop (fun (e: DragEventArgs) ->
+                              getPaths e |> Msg.Drop |> dispatch
+                              e.Handled <- true)
+
+                          Border.child (
+                              if Array.isEmpty state.paths then
+                                  TextBlock.create
+                                      [ TextBlock.textWrapping TextWrapping.Wrap
+                                        TextBlock.verticalAlignment VerticalAlignment.Center
+                                        TextBlock.horizontalAlignment HorizontalAlignment.Center
+                                        TextBlock.text Resources.Strings.``Drag and drop image files here.`` ]
+                                  :> Avalonia.FuncUI.Types.IView
+                              else
+                                  ScrollViewer.create
+                                      [ ScrollViewer.content (
+                                            ItemsControl.create
+                                                [ ItemsControl.viewItems
+                                                      [ for x in state.results do
+                                                            TextBlock.create
+                                                                [ TextBlock.textWrapping TextWrapping.Wrap
+                                                                  TextBlock.padding 8.0
+                                                                  TextBlock.text (FaceBlurResult.resultToDisplayText x) ] ] ]
+                                        ) ]
+                                  :> Avalonia.FuncUI.Types.IView
+                          ) ] ] ]

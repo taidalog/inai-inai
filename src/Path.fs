@@ -68,3 +68,5 @@ module Path =
         let fileExtension = fileInfo.Extension
 
         loop directoryInfo.FullName fileBaseName fileExtension 0
+
+    let workingDirectory: string = AppContext.BaseDirectory

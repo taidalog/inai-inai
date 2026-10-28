@@ -16,6 +16,7 @@
 
 namespace InaiInai
 
+open System
 open Argu
 
 type Arguments =
@@ -33,3 +34,12 @@ type Arguments =
             | Output_Directory _ -> "specify an output directory."
             | Verbose -> "enable verbose logging."
             | Version -> "display version."
+
+module Arguments =
+    let errorHandler: ProcessExiter =
+        ProcessExiter(
+            colorizer =
+                function
+                | ErrorCode.HelpText -> None
+                | _ -> Some ConsoleColor.Red
+        )

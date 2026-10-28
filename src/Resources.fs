@@ -31,6 +31,9 @@ module Resources =
         let ``Error: Parent PID not found.``: string =
             resourceManager.GetString "Error: Parent PID not found."
 
+        let ``Drag and drop image files here.``: string =
+            String.Format(resourceManager.GetString "Drag and drop image files here.")
+
         let ``Error: The directory {0} does not exist.`` (directoryInfo: DirectoryInfo) : string =
             String.Format(resourceManager.GetString "Error: The directory {0} does not exist.", directoryInfo.FullName)
 
