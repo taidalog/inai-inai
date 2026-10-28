@@ -192,6 +192,13 @@ module InaiInai =
           paths: string array
           results: Result<FaceBlurResult, exn> array }
 
+    type Msg =
+        | DragOver
+        | DragEnter
+        | DragLeave
+        | Drop of paths: string array
+        | Completed of results: Result<FaceBlurResult, exn> array
+
     [<RequireQualifiedAccess>]
     module State =
         let empty: State =
@@ -203,18 +210,11 @@ module InaiInai =
               paths = Array.empty
               results = Array.empty }
 
-        let init () : State * Cmd<'a> =
+        let init () : State * Cmd<Msg> =
             { empty with
                 workingDirectory = Path.workingDirectory
                 outputDirectory = Path.Join [| Path.workingDirectory; "output" |] },
             Cmd.none
-
-    type Msg =
-        | DragOver
-        | DragEnter
-        | DragLeave
-        | Drop of paths: string array
-        | Completed of results: Result<FaceBlurResult, exn> array
 
     let update (msg: Msg) (state: State) : State * Cmd<Msg> =
         match msg with
